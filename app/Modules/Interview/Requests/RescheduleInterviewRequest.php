@@ -18,7 +18,7 @@ class RescheduleInterviewRequest extends FormRequest
     {
         return [
             'scheduled_at' => ['required', 'date', 'after:now'],
-            'timezone' => ['sometimes', 'string', 'max:50'],
+            'timezone' => ['sometimes', 'string', 'max:50', $this->timezoneRule()],
             'duration_minutes' => ['sometimes', 'integer', 'min:15', 'max:480'],
             'location' => ['sometimes', 'nullable', 'string', 'max:255'],
             'meeting_link' => ['sometimes', 'nullable', 'url', 'max:500'],
@@ -28,5 +28,17 @@ class RescheduleInterviewRequest extends FormRequest
             'interviewer_user_uuids' => ['sometimes', 'array'],
             'interviewer_user_uuids.*' => ['uuid'],
         ];
+    }
+
+    /**
+     * @return \Closure(string, mixed, \Closure): void
+     */
+    private function timezoneRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail): void {
+            if (! is_string($value) || ! in_array($value, timezone_identifiers_list(), true)) {
+                $fail('The selected timezone is invalid.');
+            }
+        };
     }
 }

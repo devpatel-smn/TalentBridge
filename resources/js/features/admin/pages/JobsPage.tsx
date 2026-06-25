@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { TableCard } from '@/components/common/TableCard';
 import { Button } from '@/components/ui/button';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -112,27 +113,32 @@ export function AdminJobsPage() {
             <PageHeader
                 title="Jobs"
                 description="Monitor all job postings across the platform."
+                breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Jobs' }]}
             />
 
-            <SearchInput
-                value={search}
-                onChange={(value) => {
-                    setSearch(value);
-                    setPage(1);
-                }}
-                placeholder="Search jobs..."
-                className="max-w-md"
-            />
-
-            <DataTable
-                columns={columns}
-                data={jobs}
-                isLoading={isLoading}
-                emptyTitle="No jobs found"
-                emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
-            />
-
-            {pagination && <Pagination meta={pagination} onPageChange={setPage} />}
+            <TableCard
+                toolbar={
+                    <SearchInput
+                        value={search}
+                        onChange={(value) => {
+                            setSearch(value);
+                            setPage(1);
+                        }}
+                        placeholder="Search jobs..."
+                        className="w-full sm:max-w-sm"
+                    />
+                }
+                footer={pagination ? <Pagination meta={pagination} onPageChange={setPage} /> : undefined}
+            >
+                <DataTable
+                    columns={columns}
+                    data={jobs}
+                    isLoading={isLoading}
+                    emptyTitle="No jobs found"
+                    emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
+                    variant="embedded"
+                />
+            </TableCard>
         </div>
     );
 }

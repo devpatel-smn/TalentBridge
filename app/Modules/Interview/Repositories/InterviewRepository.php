@@ -2,6 +2,7 @@
 
 namespace App\Modules\Interview\Repositories;
 
+use App\Enums\InterviewStatus;
 use App\Models\EmployerUser;
 use App\Models\Interview;
 use App\Models\InterviewParticipant;
@@ -11,6 +12,7 @@ use App\Modules\Admin\Support\ListQueryParams;
 use App\Modules\Interview\Repositories\Contracts\InterviewRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class InterviewRepository implements InterviewRepositoryInterface
@@ -137,6 +139,39 @@ class InterviewRepository implements InterviewRepositoryInterface
             ->pluck('user_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+    }
+
+    public function hasActiveSchedulingConflict(
+        int $jobApplicationId,
+        string $scheduledAt,
+        int $durationMinutes,
+        ?int $excludeInterviewId = null,
+    ): bool {
+        $start = Carbon::parse($scheduledAt);
+        $end = $start->copy()->addMinutes($durationMinutes);
+
+        $query = Interview::query()
+            ->where('job_application_id', $jobApplicationId)
+            ->whereIn('status', [
+                InterviewStatus::Scheduled,
+                InterviewStatus::Confirmed,
+                InterviewStatus::Rescheduled,
+            ])
+            ->whereNull('deleted_at');
+
+        if ($excludeInterviewId !== null) {
+            $query->where('id', '!=', $excludeInterviewId);
+        }
+
+        return $query
+            ->get(['id', 'scheduled_at', 'duration_minutes'])
+            ->contains(function (Interview $interview) use ($start, $end): bool {
+                $interviewStart = $interview->scheduled_at;
+                $interviewEnd = $interviewStart->copy()->addMinutes($interview->duration_minutes);
+
+                return $start->equalTo($interviewStart)
+                    || ($start->lt($interviewEnd) && $end->gt($interviewStart));
+            });
     }
 
     /**

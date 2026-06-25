@@ -7,6 +7,7 @@ import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage';
+import { AcceptTeamInvitePage } from '@/features/auth/pages/AcceptTeamInvitePage';
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { GuestRoute } from '@/routes/GuestRoute';
@@ -14,8 +15,11 @@ import { RoleRoute } from '@/routes/RoleRoute';
 import { ROLES } from '@/lib/constants';
 
 import { AdminDashboardPage } from '@/features/admin/pages/DashboardPage';
+import { AdminAdminsPage } from '@/features/admin/pages/AdminsPage';
 import { AdminUsersPage } from '@/features/admin/pages/UsersPage';
+import { AdminUserDetailPage } from '@/features/admin/pages/UserDetailPage';
 import { AdminCompaniesPage } from '@/features/admin/pages/CompaniesPage';
+import { AdminCompanyDetailPage } from '@/features/admin/pages/CompanyDetailPage';
 import { AdminJobsPage } from '@/features/admin/pages/JobsPage';
 import { AdminVerificationsPage } from '@/features/admin/pages/VerificationsPage';
 import { AdminInterviewsPage } from '@/features/admin/pages/InterviewsPage';
@@ -60,6 +64,7 @@ export const router = createBrowserRouter([
                     { path: '/register', element: <RegisterPage /> },
                     { path: '/forgot-password', element: <ForgotPasswordPage /> },
                     { path: '/reset-password', element: <ResetPasswordPage /> },
+                    { path: '/accept-team-invite', element: <AcceptTeamInvitePage /> },
                     { path: '/verify-email', element: <VerifyEmailPage /> },
                 ],
             },
@@ -80,8 +85,11 @@ export const router = createBrowserRouter([
                         element: <AdminLayout />,
                         children: [
                             { path: '/admin', element: <AdminDashboardPage /> },
+                            { path: '/admin/admins', element: <AdminAdminsPage /> },
                             { path: '/admin/users', element: <AdminUsersPage /> },
+                            { path: '/admin/users/:uuid', element: <AdminUserDetailPage /> },
                             { path: '/admin/companies', element: <AdminCompaniesPage /> },
+                            { path: '/admin/companies/:uuid', element: <AdminCompanyDetailPage /> },
                             { path: '/admin/jobs', element: <AdminJobsPage /> },
                             { path: '/admin/verifications', element: <AdminVerificationsPage /> },
                             { path: '/admin/interviews', element: <AdminInterviewsPage /> },

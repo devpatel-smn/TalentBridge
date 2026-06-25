@@ -5,6 +5,7 @@ import type { ApiErrorResponse } from '@/types/api';
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
+    timeout: 15000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -17,12 +18,8 @@ function getCookie(name: string): string | null {
     return match ? decodeURIComponent(match[2]) : null;
 }
 
-let csrfInitialized = false;
-
 export async function ensureCsrfCookie(): Promise<void> {
-    if (csrfInitialized) return;
     await axios.get(SANCTUM_CSRF_URL, { withCredentials: true });
-    csrfInitialized = true;
 }
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {

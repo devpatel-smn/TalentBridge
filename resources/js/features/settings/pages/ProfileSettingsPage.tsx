@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/constants';
+import { DASHBOARD_ROUTES, ROLES } from '@/lib/constants';
 import { formatDate, getInitials, titleCase } from '@/lib/utils';
 
 export function ProfileSettingsPage() {
@@ -18,6 +18,7 @@ export function ProfileSettingsPage() {
 
     const roleLabel =
         role === ROLES.ADMIN ? 'Administrator' : role === ROLES.EMPLOYER ? 'Employer' : 'Job Seeker';
+    const dashboardHref = role ? DASHBOARD_ROUTES[role] : '/';
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -27,12 +28,17 @@ export function ProfileSettingsPage() {
                     title="Profile"
                     description="Your account information and preferences."
                     actions={
-                        <Button asChild variant="outline" size="sm">
-                            <Link to="/settings/account">
-                                <Settings className="mr-2 h-4 w-4" />
-                                Account settings
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button asChild variant="outline" size="sm">
+                                <Link to={dashboardHref}>Dashboard</Link>
+                            </Button>
+                            <Button asChild variant="outline" size="sm">
+                                <Link to="/settings/account">
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Account settings
+                                </Link>
+                            </Button>
+                        </div>
                     }
                 />
 

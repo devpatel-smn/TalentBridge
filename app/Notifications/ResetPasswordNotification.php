@@ -2,15 +2,15 @@
 
 namespace App\Notifications;
 
-use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
+use Illuminate\Auth\Notifications\ResetPassword as BaseResetPasswordNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ResetPasswordNotification extends ResetPasswordNotification
+class ResetPasswordNotification extends BaseResetPasswordNotification
 {
     public function toMail($notifiable): MailMessage
     {
-        $frontendUrl = rtrim((string) config('talentbridge.frontend_url'), '/');
-        $url = $frontendUrl.'/reset-password?token='.$this->token
+        $frontendUrl = rtrim((string) config('talentbridge.frontend_url', config('app.url')), '/');
+        $url = $frontendUrl.'/reset-password?token='.urlencode($this->token)
             .'&email='.urlencode($notifiable->getEmailForPasswordReset());
 
         return (new MailMessage)

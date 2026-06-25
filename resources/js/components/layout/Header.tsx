@@ -19,7 +19,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { AppLogo } from '@/components/common/AppLogo';
 import { withIconDefaults } from '@/lib/icon-config';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -41,23 +40,25 @@ export function Header({ onMenuClick, showMenuButton }: HeaderProps) {
     };
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-xl md:px-6">
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-4 border-b border-header-border bg-header px-4 shadow-sm md:px-6">
             {showMenuButton && (
-                <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
+                <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick} aria-label="Open menu">
                     <Menu {...withIconDefaults({ className: 'h-5 w-5' })} />
                 </Button>
             )}
 
-            <Link to="/" className="flex items-center gap-2 font-semibold">
-                <AppLogo size="sm" showWordmark />
-            </Link>
-
-            <div className="ml-auto flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            <div className="ml-auto flex items-center gap-1.5">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                    className="rounded-xl text-muted-foreground hover:bg-header-border/40 hover:text-foreground"
+                >
                     {resolvedTheme === 'dark' ? (
-                        <Sun {...withIconDefaults({ className: 'h-5 w-5' })} />
+                        <Sun {...withIconDefaults({ className: 'h-[18px] w-[18px]' })} />
                     ) : (
-                        <Moon {...withIconDefaults({ className: 'h-5 w-5' })} />
+                        <Moon {...withIconDefaults({ className: 'h-[18px] w-[18px]' })} />
                     )}
                 </Button>
 
@@ -65,23 +66,23 @@ export function Header({ onMenuClick, showMenuButton }: HeaderProps) {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="flex items-center gap-2 px-2">
-                            <Avatar className="h-8 w-8">
-                                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                        <Button variant="ghost" className="flex items-center gap-2.5 rounded-xl px-2 hover:bg-header-border/40">
+                            <Avatar className="h-8 w-8 ring-2 ring-border/60">
+                                <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                                     {getInitials(user?.full_name ?? 'U')}
                                 </AvatarFallback>
                             </Avatar>
-                            <span className="hidden max-w-[120px] truncate text-sm font-medium md:inline">
+                            <span className="hidden max-w-[140px] truncate text-sm font-medium md:inline">
                                 {user?.full_name}
                             </span>
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                            <div className="flex flex-col">
-                                <span>{user?.full_name}</span>
-                                <span className="text-xs font-normal text-muted-foreground">{user?.email}</span>
+                    <DropdownMenuContent align="end" className="w-60 rounded-xl">
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="font-semibold">{user?.full_name}</span>
+                                <span className="text-xs text-muted-foreground">{user?.email}</span>
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />

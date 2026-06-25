@@ -38,7 +38,31 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
     .object({
-        password: z.string().min(8, 'Password must be at least 8 characters'),
+        password: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Must contain uppercase letter')
+            .regex(/[a-z]/, 'Must contain lowercase letter')
+            .regex(/[0-9]/, 'Must contain a number')
+            .regex(/[^A-Za-z0-9]/, 'Must contain a symbol'),
+        password_confirmation: z.string(),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+        message: 'Passwords do not match',
+        path: ['password_confirmation'],
+    });
+
+export const acceptTeamInviteSchema = z
+    .object({
+        first_name: z.string().min(1, 'First name is required').max(100),
+        last_name: z.string().min(1, 'Last name is required').max(100),
+        password: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Must contain uppercase letter')
+            .regex(/[a-z]/, 'Must contain lowercase letter')
+            .regex(/[0-9]/, 'Must contain a number')
+            .regex(/[^A-Za-z0-9]/, 'Must contain a symbol'),
         password_confirmation: z.string(),
     })
     .refine((data) => data.password === data.password_confirmation, {

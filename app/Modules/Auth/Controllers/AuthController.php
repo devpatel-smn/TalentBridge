@@ -34,6 +34,8 @@ class AuthController extends Controller
             $request->string('role')->toString()
         );
 
+        $user = $this->authService->loginRegisteredUser($user, $request);
+
         return $this->created(
             new UserResource($user),
             'Registration successful. Please verify your email address.'
@@ -114,18 +116,19 @@ class AuthController extends Controller
         return $this->success(message: 'Verification email sent.');
     }
 
-    public function verifyEmailSigned(Request $request, int $id, string $hash): JsonResponse
+    public function verifyEmailSigned(Request $request, int $id, string $hash)
     {
         $user = User::query()->findOrFail($id);
+        $redirectBase = $request->getSchemeAndHttpHost().'/verify-email';
 
         if (! $request->hasValidSignature()) {
-            return $this->error('Invalid or expired verification link.', null, 403, 'FORBIDDEN');
+            return redirect()->to($redirectBase.'?status=invalid');
         }
 
         if (! $this->emailVerificationService->verify($user, $hash)) {
-            return $this->error('Invalid verification link.', null, 403, 'FORBIDDEN');
+            return redirect()->to($redirectBase.'?status=invalid');
         }
 
-        return $this->success(message: 'Email address verified successfully.');
+        return redirect()->to($redirectBase.'?status=verified');
     }
 }

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { type ColumnDef } from '@tanstack/react-table';
+import { Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DataTable } from '@/components/common/DataTable';
@@ -9,6 +10,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -18,6 +20,8 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { employerApi } from '@/features/employer/api/employer-api';
+import { ScheduleInterviewDialog } from '@/features/employer/components/ScheduleInterviewDialog';
+import { SCHEDULABLE_APPLICATION_STATUSES } from '@/features/interviews/lib/interview-utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
@@ -29,6 +33,7 @@ export function ApplicantsPage() {
     const [selectedJobUuid, setSelectedJobUuid] = useState(searchParams.get('job') ?? '');
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [scheduleApplicationUuid, setScheduleApplicationUuid] = useState<string | null>(null);
     const debouncedSearch = useDebounce(search);
 
     const {
@@ -109,6 +114,28 @@ export function ApplicantsPage() {
             accessorKey: 'resume',
             header: 'Resume',
             cell: ({ row }) => row.original.resume?.title ?? '—',
+        },
+        {
+            id: 'actions',
+            header: '',
+            cell: ({ row }) => {
+                const canSchedule = SCHEDULABLE_APPLICATION_STATUSES.includes(
+                    row.original.status as (typeof SCHEDULABLE_APPLICATION_STATUSES)[number],
+                );
+
+                if (!canSchedule) return null;
+
+                return (
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setScheduleApplicationUuid(row.original.uuid)}
+                    >
+                        <Video className="mr-1.5 h-4 w-4" />
+                        Schedule
+                    </Button>
+                );
+            },
         },
     ];
 
@@ -191,6 +218,18 @@ export function ApplicantsPage() {
                     {pagination && <Pagination meta={pagination} onPageChange={setPage} />}
                 </>
             )}
+
+            <ScheduleInterviewDialog
+                open={Boolean(scheduleApplicationUuid)}
+                onOpenChange={(open) => {
+                    if (!open) setScheduleApplicationUuid(null);
+                }}
+                defaultApplicationUuid={scheduleApplicationUuid ?? undefined}
+                defaultJobUuid={selectedJobUuid}
+                onSuccess={() => {
+                    setScheduleApplicationUuid(null);
+                }}
+            />
         </div>
     );
 }

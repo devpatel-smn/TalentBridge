@@ -44,7 +44,7 @@ class AuthService
             $user = $this->users->create([
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
-                'email' => $data['email'],
+                'email' => strtolower($data['email']),
                 'password' => $data['password'],
                 'phone' => $data['phone'] ?? null,
                 'status' => UserStatus::PendingVerification,
@@ -76,15 +76,11 @@ class AuthService
      */
     public function login(string $email, string $password, Request $request): array
     {
-        $this->ensureNotLockedOut($email);
-
+        $email = strtolower($email);
         $user = $this->users->findByEmail($email);
 
         if (! $user || ! Hash::check($password, $user->password)) {
-            $this->recordFailedAttempt($email);
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            $this->handleFailedLogin($email);
         }
 
         if ($user->status === UserStatus::Suspended) {
@@ -110,6 +106,15 @@ class AuthService
         return [
             'user' => $user->load(['roles.permissions', 'jobSeekerProfile', 'employerUsers.company']),
         ];
+    }
+
+    public function loginRegisteredUser(User $user, Request $request): User
+    {
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        return $this->users->updateLastLogin($user, $request->ip() ?? '')
+            ->load(['roles.permissions', 'jobSeekerProfile', 'employerUsers.company']);
     }
 
     public function logout(Request $request): void
@@ -181,25 +186,24 @@ class AuthService
         return $slug;
     }
 
-    private function ensureNotLockedOut(string $email): void
+    private function handleFailedLogin(string $email): never
     {
-        $attempts = (int) Cache::get(self::LOCKOUT_CACHE_PREFIX.$email, 0);
+        $key = self::LOCKOUT_CACHE_PREFIX.$email;
+        $attempts = (int) Cache::get($key, 0) + 1;
         $maxAttempts = config('talentbridge.security.max_login_attempts', 5);
+        $lockoutMinutes = config('talentbridge.security.lockout_minutes', 15);
+
+        Cache::put($key, $attempts, now()->addMinutes($lockoutMinutes));
 
         if ($attempts >= $maxAttempts) {
             throw ValidationException::withMessages([
                 'email' => ['Too many login attempts. Please try again later.'],
             ]);
         }
-    }
 
-    private function recordFailedAttempt(string $email): void
-    {
-        $key = self::LOCKOUT_CACHE_PREFIX.$email;
-        $attempts = (int) Cache::get($key, 0) + 1;
-        $lockoutMinutes = config('talentbridge.security.lockout_minutes', 15);
-
-        Cache::put($key, $attempts, now()->addMinutes($lockoutMinutes));
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
+        ]);
     }
 
     private function clearLoginAttempts(string $email): void

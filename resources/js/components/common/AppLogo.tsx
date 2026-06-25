@@ -8,9 +8,9 @@ interface AppLogoProps {
 }
 
 const sizes = {
-    sm: { box: 'h-8 w-8', svg: 20, text: 'text-base' },
-    md: { box: 'h-10 w-10', svg: 24, text: 'text-lg' },
-    lg: { box: 'h-12 w-12', svg: 28, text: 'text-xl' },
+    sm: { box: 'h-8 w-8', svg: 18, text: 'text-base' },
+    md: { box: 'h-10 w-10', svg: 22, text: 'text-lg' },
+    lg: { box: 'h-12 w-12', svg: 26, text: 'text-xl' },
 };
 
 export function AppLogo({ size = 'md', showWordmark = false, variant = 'default', className }: AppLogoProps) {
@@ -22,8 +22,8 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
                 className={cn(
                     'relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm',
                     variant === 'light'
-                        ? 'bg-white/15 ring-1 ring-white/20 backdrop-blur-sm'
-                        : 'bg-gradient-to-br from-primary via-primary to-violet-600',
+                        ? 'bg-white/15 ring-1 ring-white/25 backdrop-blur-sm'
+                        : 'gradient-brand shadow-elevation-1',
                     s.box,
                 )}
             >
@@ -49,18 +49,13 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
                     />
                     <circle cx="8" cy="7" r="1.75" fill="currentColor" />
                     <circle cx="16" cy="7" r="1.75" fill="currentColor" />
-                    <path
-                        d="M10 16h4"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                    />
+                    <path d="M10 16h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
                 </svg>
             </div>
             {showWordmark && (
                 <span
                     className={cn(
-                        'font-semibold tracking-tight',
+                        'font-bold tracking-tight',
                         s.text,
                         variant === 'light' ? 'text-white' : 'text-gradient',
                     )}

@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { type ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { DataTable } from '@/components/common/DataTable';
 import { ErrorState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { TableCard } from '@/components/common/TableCard';
+import { Button } from '@/components/ui/button';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate } from '@/lib/utils';
@@ -37,6 +40,7 @@ export function AdminCompaniesPage() {
                 page,
                 per_page: PER_PAGE,
                 search: debouncedSearch || undefined,
+                include: 'jobs',
             }) as Promise<ApiResponse<AdminCompany[]>>,
     });
 
@@ -81,6 +85,15 @@ export function AdminCompaniesPage() {
                     <span className="text-sm text-muted-foreground">{formatDate(row.original.created_at)}</span>
                 ),
             },
+            {
+                id: 'actions',
+                header: 'Actions',
+                cell: ({ row }) => (
+                    <Button size="sm" variant="outline" asChild>
+                        <Link to={`/admin/companies/${row.original.uuid}`}>View</Link>
+                    </Button>
+                ),
+            },
         ],
         [],
     );
@@ -102,28 +115,33 @@ export function AdminCompaniesPage() {
         <div className="space-y-6">
             <PageHeader
                 title="Companies"
-                description="Browse and monitor registered employer companies."
+                description="Browse registered employer companies and view their full profiles."
+                breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Companies' }]}
             />
 
-            <SearchInput
-                value={search}
-                onChange={(value) => {
-                    setSearch(value);
-                    setPage(1);
-                }}
-                placeholder="Search companies..."
-                className="max-w-md"
-            />
-
-            <DataTable
-                columns={columns}
-                data={companies}
-                isLoading={isLoading}
-                emptyTitle="No companies found"
-                emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
-            />
-
-            {pagination && <Pagination meta={pagination} onPageChange={setPage} />}
+            <TableCard
+                toolbar={
+                    <SearchInput
+                        value={search}
+                        onChange={(value) => {
+                            setSearch(value);
+                            setPage(1);
+                        }}
+                        placeholder="Search companies..."
+                        className="w-full sm:max-w-sm"
+                    />
+                }
+                footer={pagination ? <Pagination meta={pagination} onPageChange={setPage} /> : undefined}
+            >
+                <DataTable
+                    columns={columns}
+                    data={companies}
+                    isLoading={isLoading}
+                    emptyTitle="No companies found"
+                    emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
+                    variant="embedded"
+                />
+            </TableCard>
         </div>
     );
 }

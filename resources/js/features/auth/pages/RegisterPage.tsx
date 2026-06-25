@@ -11,9 +11,11 @@ import { authApi } from '@/features/auth/api/auth-api';
 import { registerSchema, type RegisterFormData } from '@/features/auth/schemas/auth-schemas';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { AppLogo } from '@/components/common/AppLogo';
+import { useAuthStore } from '@/stores/auth-store';
 
 export function RegisterPage() {
     const navigate = useNavigate();
+    const setUser = useAuthStore((s) => s.setUser);
 
     const {
         register,
@@ -30,7 +32,8 @@ export function RegisterPage() {
 
     const mutation = useMutation({
         mutationFn: authApi.register,
-        onSuccess: () => {
+        onSuccess: (user) => {
+            setUser(user);
             toast.success('Account created! Please verify your email.');
             navigate('/verify-email');
         },
@@ -38,15 +41,15 @@ export function RegisterPage() {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-7">
             <div className="flex flex-col items-center gap-2 lg:hidden">
                 <AppLogo size="lg" showWordmark />
             </div>
-            <div className="space-y-2 text-center lg:text-left">
+            <div className="space-y-1.5 text-center lg:text-left">
                 <h2 className="text-2xl font-bold tracking-tight">Create account</h2>
-                <p className="text-muted-foreground">Join TalentBridge as an employer or job seeker</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">Join TalentBridge as an employer or job seeker</p>
             </div>
-            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="first_name">First name</Label>
@@ -95,11 +98,11 @@ export function RegisterPage() {
                         <p className="text-sm text-destructive">{errors.password_confirmation.message}</p>
                     )}
                 </div>
-                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={mutation.isPending}>
                     {mutation.isPending ? 'Creating account...' : 'Create account'}
                 </Button>
             </form>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="pt-1 text-center text-sm text-muted-foreground">
                 Already have an account?{' '}
                 <Link to="/login" className="font-medium text-primary hover:underline">
                     Sign in

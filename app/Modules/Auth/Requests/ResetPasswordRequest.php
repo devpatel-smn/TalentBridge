@@ -12,6 +12,15 @@ class ResetPasswordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            $this->merge([
+                'email' => strtolower(trim($this->string('email')->toString())),
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */

@@ -1,6 +1,16 @@
 import { apiClient } from '@/lib/api-client';
 import type { ApiResponse, ListParams } from '@/types/api';
-import type { Company, Job, JobApplication, Interview } from '@/types/models';
+import type {
+    Company,
+    Interview,
+    InviteTeamMemberPayload,
+    Job,
+    JobApplication,
+    RescheduleInterviewPayload,
+    ScheduleInterviewPayload,
+    TeamMember,
+    UpdateTeamMemberPayload,
+} from '@/types/models';
 
 function buildQuery(params?: ListParams) {
     const sp = new URLSearchParams();
@@ -83,13 +93,50 @@ export const employerApi = {
             await apiClient.patch(`/employer/applicants/${uuid}/status`, payload);
         },
     },
+    team: {
+        list: async (params?: ListParams) => {
+            const { data } = await apiClient.get<ApiResponse<TeamMember[]>>(`/employer/team?${buildQuery(params)}`);
+            return data;
+        },
+        get: async (id: number) => {
+            const { data } = await apiClient.get<ApiResponse<TeamMember>>(`/employer/team/${id}`);
+            return data.data;
+        },
+        invite: async (payload: InviteTeamMemberPayload) => {
+            const { data } = await apiClient.post<ApiResponse<TeamMember>>('/employer/team', payload);
+            return data.data;
+        },
+        update: async (id: number, payload: UpdateTeamMemberPayload) => {
+            const { data } = await apiClient.put<ApiResponse<TeamMember>>(`/employer/team/${id}`, payload);
+            return data.data;
+        },
+        remove: async (id: number) => {
+            await apiClient.delete(`/employer/team/${id}`);
+        },
+    },
     interviews: {
         list: async (params?: ListParams) => {
             const { data } = await apiClient.get<ApiResponse<Interview[]>>(`/employer/interviews?${buildQuery(params)}`);
             return data;
         },
-        create: async (payload: Record<string, unknown>) => {
+        upcoming: async (params?: ListParams) => {
+            const { data } = await apiClient.get<ApiResponse<Interview[]>>(`/employer/interviews/upcoming?${buildQuery(params)}`);
+            return data;
+        },
+        get: async (uuid: string) => {
+            const { data } = await apiClient.get<ApiResponse<Interview>>(`/employer/interviews/${uuid}`);
+            return data.data;
+        },
+        create: async (payload: ScheduleInterviewPayload) => {
             const { data } = await apiClient.post<ApiResponse<Interview>>('/employer/interviews', payload);
+            return data.data;
+        },
+        reschedule: async (uuid: string, payload: RescheduleInterviewPayload) => {
+            const { data } = await apiClient.patch<ApiResponse<Interview>>(`/employer/interviews/${uuid}/reschedule`, payload);
+            return data.data;
+        },
+        cancel: async (uuid: string, payload?: { cancellation_reason?: string }) => {
+            const { data } = await apiClient.patch<ApiResponse<Interview>>(`/employer/interviews/${uuid}/cancel`, payload ?? {});
             return data.data;
         },
     },

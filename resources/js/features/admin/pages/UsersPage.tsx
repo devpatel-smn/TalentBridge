@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { type ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DataTable } from '@/components/common/DataTable';
 import { ErrorState } from '@/components/common/EmptyState';
@@ -8,6 +9,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { TableCard } from '@/components/common/TableCard';
 import { Button } from '@/components/ui/button';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -17,15 +19,18 @@ import type { ApiResponse } from '@/types/api';
 
 const PER_PAGE = 15;
 
-interface AdminUser {
-    id: number;
+interface JobSeekerListItem {
     uuid: string;
-    full_name: string;
-    email: string;
-    status: string;
-    roles?: string[];
-    last_login_at?: string | null;
-    created_at?: string | null;
+    headline?: string | null;
+    current_title?: string | null;
+    profile_completion?: number;
+    user?: {
+        id: number;
+        full_name: string;
+        email: string;
+        status: string;
+        last_login_at?: string | null;
+    };
 }
 
 export function AdminUsersPage() {
@@ -35,56 +40,66 @@ export function AdminUsersPage() {
     const debouncedSearch = useDebounce(search);
 
     const { data, isLoading, isError, error, refetch } = useQuery({
-        queryKey: ['admin', 'users', page, debouncedSearch],
+        queryKey: ['admin', 'job-seekers', page, debouncedSearch],
         queryFn: () =>
-            adminApi.users({
+            adminApi.jobSeekers({
                 page,
                 per_page: PER_PAGE,
                 search: debouncedSearch || undefined,
-            }) as Promise<ApiResponse<AdminUser[]>>,
+            }) as Promise<ApiResponse<JobSeekerListItem[]>>,
     });
 
     const statusMutation = useMutation({
         mutationFn: ({ id, status }: { id: number; status: string }) => adminApi.updateUserStatus(id, status),
         onSuccess: () => {
-            toast.success('User status updated');
-            queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+            toast.success('Job seeker status updated');
+            queryClient.invalidateQueries({ queryKey: ['admin', 'job-seekers'] });
         },
-        onError: (err) => toast.error(getApiErrorMessage(err, 'Failed to update user status')),
+        onError: (err) => toast.error(getApiErrorMessage(err, 'Failed to update job seeker status')),
     });
 
-    const columns = useMemo<ColumnDef<AdminUser>[]>(
+    const columns = useMemo<ColumnDef<JobSeekerListItem>[]>(
         () => [
             {
-                accessorKey: 'full_name',
+                accessorKey: 'user',
                 header: 'Name',
                 cell: ({ row }) => (
                     <div>
-                        <p className="font-medium">{row.original.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{row.original.email}</p>
+                        <p className="font-medium text-foreground">{row.original.user?.full_name ?? '—'}</p>
+                        <p className="text-xs text-muted-foreground">{row.original.user?.email}</p>
                     </div>
                 ),
             },
             {
-                accessorKey: 'roles',
-                header: 'Roles',
+                accessorKey: 'current_title',
+                header: 'Title',
                 cell: ({ row }) => (
                     <span className="text-sm text-muted-foreground">
-                        {row.original.roles?.join(', ') ?? '—'}
+                        {row.original.current_title ?? row.original.headline ?? '—'}
                     </span>
                 ),
             },
             {
-                accessorKey: 'status',
-                header: 'Status',
-                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+                accessorKey: 'profile_completion',
+                header: 'Profile',
+                cell: ({ row }) => (
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                        {row.original.profile_completion ?? 0}%
+                    </span>
+                ),
             },
             {
-                accessorKey: 'last_login_at',
+                id: 'status',
+                header: 'Status',
+                cell: ({ row }) =>
+                    row.original.user?.status ? <StatusBadge status={row.original.user.status} /> : '—',
+            },
+            {
+                id: 'last_login_at',
                 header: 'Last login',
                 cell: ({ row }) => (
-                    <span className="text-sm text-muted-foreground">
-                        {formatDateTime(row.original.last_login_at)}
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                        {formatDateTime(row.original.user?.last_login_at)}
                     </span>
                 ),
             },
@@ -92,12 +107,18 @@ export function AdminUsersPage() {
                 id: 'actions',
                 header: 'Actions',
                 cell: ({ row }) => {
-                    const user = row.original;
+                    const seeker = row.original;
+                    const user = seeker.user;
+                    if (!user) return null;
+
                     const isActive = user.status === 'active';
                     const isSuspended = user.status === 'suspended';
 
                     return (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="outline" asChild>
+                                <Link to={`/admin/users/${seeker.uuid}`}>View</Link>
+                            </Button>
                             {isSuspended || user.status === 'inactive' ? (
                                 <Button
                                     size="sm"
@@ -126,13 +147,13 @@ export function AdminUsersPage() {
         [statusMutation.isPending],
     );
 
-    const users = data?.data ?? [];
+    const jobSeekers = data?.data ?? [];
     const pagination = data?.meta?.pagination;
 
     if (isError) {
         return (
             <ErrorState
-                title="Failed to load users"
+                title="Failed to load job seekers"
                 description={error instanceof Error ? error.message : 'An unexpected error occurred.'}
                 onRetry={() => refetch()}
             />
@@ -143,28 +164,33 @@ export function AdminUsersPage() {
         <div className="space-y-6">
             <PageHeader
                 title="Users"
-                description="Manage platform users, roles, and account status."
+                description="Manage job seeker accounts and view their full profiles."
+                breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Users' }]}
             />
 
-            <SearchInput
-                value={search}
-                onChange={(value) => {
-                    setSearch(value);
-                    setPage(1);
-                }}
-                placeholder="Search by name or email..."
-                className="max-w-md"
-            />
-
-            <DataTable
-                columns={columns}
-                data={users}
-                isLoading={isLoading}
-                emptyTitle="No users found"
-                emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
-            />
-
-            {pagination && <Pagination meta={pagination} onPageChange={setPage} />}
+            <TableCard
+                toolbar={
+                    <SearchInput
+                        value={search}
+                        onChange={(value) => {
+                            setSearch(value);
+                            setPage(1);
+                        }}
+                        placeholder="Search job seekers..."
+                        className="w-full sm:max-w-sm"
+                    />
+                }
+                footer={pagination ? <Pagination meta={pagination} onPageChange={setPage} /> : undefined}
+            >
+                <DataTable
+                    columns={columns}
+                    data={jobSeekers}
+                    isLoading={isLoading}
+                    emptyTitle="No job seekers found"
+                    emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
+                    variant="embedded"
+                />
+            </TableCard>
         </div>
     );
 }

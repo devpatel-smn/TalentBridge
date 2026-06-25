@@ -38,6 +38,7 @@ class AdminCompanyRepository implements AdminCompanyRepositoryInterface
     {
         return Company::query()
             ->with(['creator', 'updater', 'verifier', 'logo', 'employerUsers.user', 'verifications'])
+            ->withCount('jobs')
             ->where('uuid', $uuid)
             ->first();
     }

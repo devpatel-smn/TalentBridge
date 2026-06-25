@@ -30,6 +30,10 @@ class EmployerDashboardRepository implements EmployerDashboardRepositoryInterfac
                 ->whereNull('deleted_at'))
             ->whereNull('deleted_at');
 
+        $interviewsQuery = Interview::query()
+            ->where('company_id', $companyId)
+            ->whereNull('deleted_at');
+
         return [
             'company' => [
                 'uuid' => $company?->uuid,
@@ -63,14 +67,34 @@ class EmployerDashboardRepository implements EmployerDashboardRepositoryInterfac
                     ->count(),
             ],
             'interviews' => [
-                'upcoming' => Interview::query()
-                    ->where('company_id', $companyId)
-                    ->whereNull('deleted_at')
+                'upcoming' => (clone $interviewsQuery)
                     ->where('scheduled_at', '>=', now())
                     ->whereIn('status', [
                         InterviewStatus::Scheduled,
                         InterviewStatus::Confirmed,
+                        InterviewStatus::Rescheduled,
                     ])
+                    ->count(),
+                'today' => (clone $interviewsQuery)
+                    ->whereDate('scheduled_at', today())
+                    ->whereNotIn('status', [InterviewStatus::Cancelled])
+                    ->count(),
+                'this_week' => (clone $interviewsQuery)
+                    ->whereBetween('scheduled_at', [now()->startOfWeek(), now()->endOfWeek()])
+                    ->whereNotIn('status', [InterviewStatus::Cancelled])
+                    ->count(),
+                'scheduled' => (clone $interviewsQuery)
+                    ->whereIn('status', [
+                        InterviewStatus::Scheduled,
+                        InterviewStatus::Confirmed,
+                        InterviewStatus::Rescheduled,
+                    ])
+                    ->count(),
+                'completed' => (clone $interviewsQuery)
+                    ->where('status', InterviewStatus::Completed)
+                    ->count(),
+                'cancelled' => (clone $interviewsQuery)
+                    ->where('status', InterviewStatus::Cancelled)
                     ->count(),
             ],
             'verification' => [

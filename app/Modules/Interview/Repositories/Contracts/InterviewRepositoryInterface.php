@@ -54,4 +54,11 @@ interface InterviewRepositoryInterface
      * @return list<int>
      */
     public function filterCompanyMemberUserIds(int $companyId, array $userIds): array;
+
+    public function hasActiveSchedulingConflict(
+        int $jobApplicationId,
+        string $scheduledAt,
+        int $durationMinutes,
+        ?int $excludeInterviewId = null,
+    ): bool;
 }

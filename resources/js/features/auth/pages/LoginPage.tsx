@@ -6,9 +6,9 @@ import { LockKeyhole, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { AppLogo } from '@/components/common/AppLogo';
 import { InputIcon } from '@/components/common/InputIcon';
+import { FormField } from '@/components/forms/FormField';
 import { authApi } from '@/features/auth/api/auth-api';
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth-schemas';
 import { useAuthStore } from '@/stores/auth-store';
@@ -31,6 +31,12 @@ export function LoginPage() {
         mutationFn: authApi.login,
         onSuccess: async (user) => {
             setUser(user);
+            if (!user.email_verified_at) {
+                toast.success('Signed in. Please verify your email to continue.');
+                navigate('/verify-email');
+                return;
+            }
+
             toast.success('Welcome back!');
             const role = user.roles.includes(ROLES.ADMIN)
                 ? ROLES.ADMIN
@@ -43,47 +49,63 @@ export function LoginPage() {
     });
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col items-center gap-2 lg:hidden">
+        <div className="space-y-7">
+            <div className="flex flex-col items-center gap-3 lg:hidden">
                 <AppLogo size="lg" showWordmark />
             </div>
-            <div className="space-y-2 text-center lg:text-left">
+            <div className="space-y-1.5 text-center lg:text-left">
                 <h2 className="text-2xl font-bold tracking-tight">Sign in</h2>
-                <p className="text-muted-foreground">Enter your credentials to access your account</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                    Enter your credentials to access your account
+                </p>
             </div>
-            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
+                <FormField label="Email" htmlFor="email" error={errors.email?.message} required>
                     <div className="relative">
-                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
                             <InputIcon icon={Mail} />
                         </span>
-                        <Input id="email" type="email" placeholder="you@company.com" className="pl-10" {...register('email')} />
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="you@company.com"
+                            className="rounded-xl pl-10"
+                            aria-invalid={!!errors.email}
+                            {...register('email')}
+                        />
                     </div>
-                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-                </div>
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                </FormField>
+                <FormField
+                    label="Password"
+                    htmlFor="password"
+                    error={errors.password?.message}
+                    required
+                    labelAction={
+                        <Link to="/forgot-password" className="shrink-0 text-xs font-medium text-primary hover:underline">
                             Forgot password?
                         </Link>
-                    </div>
+                    }
+                >
                     <div className="relative">
-                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
                             <InputIcon icon={LockKeyhole} />
                         </span>
-                        <Input id="password" type="password" className="pl-10" {...register('password')} />
+                        <Input
+                            id="password"
+                            type="password"
+                            className="rounded-xl pl-10"
+                            aria-invalid={!!errors.password}
+                            {...register('password')}
+                        />
                     </div>
-                    {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-                </div>
-                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                </FormField>
+                <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={mutation.isPending}>
                     {mutation.isPending ? 'Signing in...' : 'Sign in'}
                 </Button>
             </form>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="pt-1 text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link to="/register" className="font-medium text-primary hover:underline">
+                <Link to="/register" className="font-semibold text-primary hover:underline">
                     Create account
                 </Link>
             </p>

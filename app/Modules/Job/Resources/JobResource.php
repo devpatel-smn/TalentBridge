@@ -26,7 +26,7 @@ class JobResource extends JsonResource
             'salary_min' => $this->when($this->is_salary_visible, $this->salary_min),
             'salary_max' => $this->when($this->is_salary_visible, $this->salary_max),
             'salary_currency' => $this->when($this->is_salary_visible, $this->salary_currency),
-            'salary_period' => $this->when($this->is_salary_visible, $this->salary_period),
+            'salary_period' => $this->salary_period,
             'is_salary_visible' => $this->is_salary_visible,
             'location_city' => $this->location_city,
             'location_state' => $this->location_state,

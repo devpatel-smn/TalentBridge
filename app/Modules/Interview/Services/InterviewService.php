@@ -38,6 +38,7 @@ class InterviewService
         private readonly JobApplicationRepositoryInterface $applications,
         private readonly InterviewStatusService $statusService,
         private readonly ApplicationStatusService $applicationStatusService,
+        private readonly InterviewNotificationService $interviewNotifications,
     ) {}
 
     public function listForCompany(int $companyId, ListQueryParams $params): LengthAwarePaginator
@@ -82,6 +83,9 @@ class InterviewService
 
         $this->assertApplicationSchedulable($application);
 
+        $durationMinutes = (int) ($data['duration_minutes'] ?? 60);
+        $this->assertNoSchedulingConflict($application->id, $data['scheduled_at'], $durationMinutes);
+
         return DB::transaction(function () use ($companyId, $data, $actor, $request, $application) {
             $interview = $this->interviews->create([
                 'job_application_id' => $application->id,
@@ -124,7 +128,7 @@ class InterviewService
                 ['interview_uuid' => $interview->uuid, 'application_uuid' => $application->uuid]
             );
 
-            return $interview->fresh([
+            $fresh = $interview->fresh([
                 'company',
                 'jobApplication.job',
                 'jobApplication.jobSeekerProfile.user',
@@ -132,6 +136,10 @@ class InterviewService
                 'scheduler',
                 'statusHistories.changedByUser',
             ]);
+
+            $this->interviewNotifications->notifyScheduled($fresh);
+
+            return $fresh;
         });
     }
 
@@ -141,6 +149,14 @@ class InterviewService
     public function reschedule(Interview $interview, array $data, User $actor, Request $request): Interview
     {
         $this->statusService->assertReschedulable($interview->status);
+
+        $durationMinutes = (int) ($data['duration_minutes'] ?? $interview->duration_minutes);
+        $this->assertNoSchedulingConflict(
+            $interview->job_application_id,
+            $data['scheduled_at'],
+            $durationMinutes,
+            $interview->id,
+        );
 
         return DB::transaction(function () use ($interview, $data, $actor, $request) {
             $fromStatus = $interview->status;
@@ -198,7 +214,18 @@ class InterviewService
                 ['interview_uuid' => $updated->uuid]
             );
 
-            return $updated->load(['statusHistories.changedByUser']);
+            $fresh = $updated->load([
+                'company',
+                'jobApplication.job',
+                'jobApplication.jobSeekerProfile.user',
+                'participants.user',
+                'scheduler',
+                'statusHistories.changedByUser',
+            ]);
+
+            $this->interviewNotifications->notifyRescheduled($fresh);
+
+            return $fresh;
         });
     }
 
@@ -243,7 +270,21 @@ class InterviewService
                 ['interview_uuid' => $updated->uuid]
             );
 
-            return $updated->load(['statusHistories.changedByUser']);
+            $fresh = $updated->load([
+                'company',
+                'jobApplication.job',
+                'jobApplication.jobSeekerProfile.user',
+                'participants.user',
+                'scheduler',
+                'statusHistories.changedByUser',
+            ]);
+
+            $this->interviewNotifications->notifyCancelled(
+                $fresh,
+                $data['cancellation_reason'] ?? null,
+            );
+
+            return $fresh;
         });
     }
 
@@ -479,6 +520,18 @@ class InterviewService
             ]);
         }
 
+        if (! in_array($interview->status, [InterviewStatus::Scheduled, InterviewStatus::Rescheduled, InterviewStatus::Confirmed], true)) {
+            throw ValidationException::withMessages([
+                'interview' => ['This interview can no longer be accepted or declined.'],
+            ]);
+        }
+
+        if ($participant->response_status !== InterviewParticipant::RESPONSE_PENDING) {
+            throw ValidationException::withMessages([
+                'response' => ['You have already responded to this interview.'],
+            ]);
+        }
+
         $response = $data['response'];
 
         return DB::transaction(function () use ($interview, $participant, $response, $actor, $request) {
@@ -595,6 +648,24 @@ class InterviewService
         if (! in_array($application->status, self::SCHEDULABLE_STATUSES, true)) {
             throw ValidationException::withMessages([
                 'application_uuid' => ['Only shortlisted or selected candidates can be scheduled for interviews.'],
+            ]);
+        }
+    }
+
+    private function assertNoSchedulingConflict(
+        int $jobApplicationId,
+        string $scheduledAt,
+        int $durationMinutes,
+        ?int $excludeInterviewId = null,
+    ): void {
+        if ($this->interviews->hasActiveSchedulingConflict(
+            $jobApplicationId,
+            $scheduledAt,
+            $durationMinutes,
+            $excludeInterviewId,
+        )) {
+            throw ValidationException::withMessages([
+                'scheduled_at' => ['An active interview already exists at this date and time for this candidate.'],
             ]);
         }
     }

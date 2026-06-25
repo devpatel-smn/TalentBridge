@@ -12,9 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/features/auth/api/auth-api';
 import { changePasswordSchema, type ChangePasswordFormData } from '@/features/auth/schemas/auth-schemas';
+import { useAuth } from '@/hooks/useAuth';
+import { DASHBOARD_ROUTES } from '@/lib/constants';
 import { getApiErrorMessage } from '@/lib/api-client';
 
 export function AccountSettingsPage() {
+    const { role } = useAuth();
+    const dashboardHref = role ? DASHBOARD_ROUTES[role] : '/';
     const {
         register,
         handleSubmit,
@@ -47,6 +51,11 @@ export function AccountSettingsPage() {
                 <PageHeader
                     title="Account settings"
                     description="Manage your password and security preferences."
+                    actions={
+                        <Button asChild variant="outline" size="sm">
+                            <Link to={dashboardHref}>Dashboard</Link>
+                        </Button>
+                    }
                 />
 
                 <Card className="mt-6">

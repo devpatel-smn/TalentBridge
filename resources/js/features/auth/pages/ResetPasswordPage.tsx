@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,11 +13,20 @@ import { z } from 'zod';
 
 type ResetFormData = z.infer<typeof resetPasswordSchema>;
 
+function getResetLinkParams(search: string): { token: string; email: string } {
+    const params = new URLSearchParams(search);
+
+    return {
+        token: params.get('token')?.trim() ?? '',
+        email: params.get('email')?.trim() ?? '',
+    };
+}
+
 export function ResetPasswordPage() {
     const navigate = useNavigate();
-    const [params] = useSearchParams();
-    const token = params.get('token') ?? '';
-    const email = params.get('email') ?? '';
+    const location = useLocation();
+    const { token, email } = getResetLinkParams(location.search);
+    const hasValidLink = Boolean(token && email);
 
     const {
         register,
@@ -35,13 +44,34 @@ export function ResetPasswordPage() {
         onError: (error) => toast.error(getApiErrorMessage(error)),
     });
 
-    return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center lg:text-left">
-                <h2 className="text-2xl font-bold tracking-tight">Reset password</h2>
-                <p className="text-muted-foreground">Enter your new password below</p>
+    if (!hasValidLink) {
+        return (
+            <div className="space-y-7">
+                <div className="space-y-1.5 text-center lg:text-left">
+                    <h2 className="text-2xl font-bold tracking-tight">Invalid reset link</h2>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                        This password reset link is missing required information or has expired.
+                    </p>
+                </div>
+                <Button asChild className="h-11 w-full rounded-xl text-base">
+                    <Link to="/forgot-password">Request a new reset link</Link>
+                </Button>
+                <p className="pt-1 text-center text-sm text-muted-foreground">
+                    <Link to="/login" className="font-medium text-primary hover:underline">
+                        Back to sign in
+                    </Link>
+                </p>
             </div>
-            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
+        );
+    }
+
+    return (
+        <div className="space-y-7">
+            <div className="space-y-1.5 text-center lg:text-left">
+                <h2 className="text-2xl font-bold tracking-tight">Reset password</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">Enter your new password for {email}</p>
+            </div>
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
                 <div className="space-y-2">
                     <Label htmlFor="password">New password</Label>
                     <Input id="password" type="password" {...register('password')} />
@@ -54,11 +84,11 @@ export function ResetPasswordPage() {
                         <p className="text-sm text-destructive">{errors.password_confirmation.message}</p>
                     )}
                 </div>
-                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={mutation.isPending}>
                     {mutation.isPending ? 'Resetting...' : 'Reset password'}
                 </Button>
             </form>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="pt-1 text-center text-sm text-muted-foreground">
                 <Link to="/login" className="font-medium text-primary hover:underline">
                     Back to sign in
                 </Link>

@@ -2,15 +2,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AppLogo } from '@/components/common/AppLogo';
+import { InputIcon } from '@/components/common/InputIcon';
+import { FormField } from '@/components/forms/FormField';
 import { authApi } from '@/features/auth/api/auth-api';
 import { forgotPasswordSchema } from '@/features/auth/schemas/auth-schemas';
 import { getApiErrorMessage } from '@/lib/api-client';
-import { Mail } from 'lucide-react';
-import { z } from 'zod';
 
 type ForgotFormData = z.infer<typeof forgotPasswordSchema>;
 
@@ -28,24 +30,38 @@ export function ForgotPasswordPage() {
     });
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center lg:text-left">
-                <h2 className="text-2xl font-bold tracking-tight">Forgot password</h2>
-                <p className="text-muted-foreground">We&apos;ll send you a reset link if your account exists</p>
+        <div className="space-y-7">
+            <div className="flex flex-col items-center gap-3 lg:hidden">
+                <AppLogo size="lg" showWordmark />
             </div>
-            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="you@company.com" {...register('email')} />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-                </div>
-                <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                    <Mail className="mr-2 h-4 w-4" />
+            <div className="space-y-1.5 text-center lg:text-left">
+                <h2 className="text-2xl font-bold tracking-tight">Forgot password</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                    We&apos;ll send you a reset link if your account exists
+                </p>
+            </div>
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
+                <FormField label="Email" htmlFor="email" error={errors.email?.message} required>
+                    <div className="relative">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                            <InputIcon icon={Mail} />
+                        </span>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="you@company.com"
+                            className="rounded-xl pl-10"
+                            aria-invalid={!!errors.email}
+                            {...register('email')}
+                        />
+                    </div>
+                </FormField>
+                <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={mutation.isPending}>
                     {mutation.isPending ? 'Sending...' : 'Send reset link'}
                 </Button>
             </form>
-            <p className="text-center text-sm text-muted-foreground">
-                <Link to="/login" className="font-medium text-primary hover:underline">
+            <p className="pt-1 text-center text-sm text-muted-foreground">
+                <Link to="/login" className="font-semibold text-primary hover:underline">
                     Back to sign in
                 </Link>
             </p>

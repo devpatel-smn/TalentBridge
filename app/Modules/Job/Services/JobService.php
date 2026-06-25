@@ -77,7 +77,7 @@ class JobService
                 'salary_max' => $data['salary_max'] ?? null,
                 'salary_currency' => $data['salary_currency'] ?? 'USD',
                 'salary_period' => $data['salary_period'] ?? 'yearly',
-                'is_salary_visible' => $data['is_salary_visible'] ?? false,
+                'is_salary_visible' => $data['is_salary_visible'] ?? true,
                 'location_city' => $data['location_city'] ?? null,
                 'location_state' => $data['location_state'] ?? null,
                 'location_country' => $data['location_country'] ?? null,

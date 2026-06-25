@@ -32,7 +32,7 @@ class UpdateJobRequest extends FormRequest
             'salary_min' => ['nullable', 'numeric', 'min:0'],
             'salary_max' => ['nullable', 'numeric', 'min:0'],
             'salary_currency' => ['nullable', 'string', 'size:3'],
-            'salary_period' => ['nullable', 'string', 'in:hourly,monthly,yearly'],
+            'salary_period' => ['sometimes', 'required', 'string', Rule::in(['hourly', 'monthly', 'yearly'])],
             'is_salary_visible' => ['sometimes', 'boolean'],
             'location_city' => ['nullable', 'string', 'max:100'],
             'location_state' => ['nullable', 'string', 'max:100'],

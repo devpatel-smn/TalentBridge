@@ -38,6 +38,15 @@ const workModes: WorkMode[] = ['onsite', 'remote', 'hybrid'];
 const experienceLevels = ['entry', 'mid', 'senior', 'lead'] as const;
 const salaryPeriods = ['hourly', 'monthly', 'yearly'] as const;
 
+function getLocalDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+const today = getLocalDateString();
+
 const jobFormSchema = z
     .object({
         title: z.string().min(1, 'Title is required').max(255),
@@ -54,11 +63,11 @@ const jobFormSchema = z
             'freelance',
         ]),
         work_mode: z.enum(['onsite', 'remote', 'hybrid']),
-        experience_level: z.enum(['entry', 'mid', 'senior', 'lead']).optional(),
+        experience_level: z.enum(['entry', 'mid', 'senior', 'lead']).optional().or(z.literal('')),
         salary_min: z.coerce.number().min(0).optional().or(z.literal('')),
         salary_max: z.coerce.number().min(0).optional().or(z.literal('')),
         salary_currency: z.string().length(3).optional(),
-        salary_period: z.enum(['hourly', 'monthly', 'yearly']).optional(),
+        salary_period: z.enum(['hourly', 'monthly', 'yearly']),
         is_salary_visible: z.boolean().optional(),
         location_city: z.string().max(100).optional(),
         location_state: z.string().max(100).optional(),
@@ -66,6 +75,13 @@ const jobFormSchema = z
         application_deadline: z.string().optional(),
         vacancies: z.coerce.number().int().min(1).max(1000).optional(),
     })
+    .refine(
+        (data) => {
+            if (!data.application_deadline) return true;
+            return data.application_deadline >= today;
+        },
+        { message: 'Application deadline cannot be in the past', path: ['application_deadline'] },
+    )
     .refine(
         (data) => {
             if (data.salary_min === '' || data.salary_max === '') return true;
@@ -79,6 +95,31 @@ type JobFormData = z.infer<typeof jobFormSchema>;
 
 function formatLabel(value: string) {
     return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function normalizeJobPayload(formData: JobFormData) {
+    const nullableString = (value?: string) => (value?.trim() ? value.trim() : null);
+
+    return {
+        title: formData.title,
+        description: formData.description,
+        requirements: nullableString(formData.requirements),
+        responsibilities: nullableString(formData.responsibilities),
+        benefits: nullableString(formData.benefits),
+        employment_type: formData.employment_type,
+        work_mode: formData.work_mode,
+        experience_level: formData.experience_level || null,
+        salary_min: formData.salary_min === '' ? null : Number(formData.salary_min),
+        salary_max: formData.salary_max === '' ? null : Number(formData.salary_max),
+        salary_currency: formData.salary_currency || 'USD',
+        salary_period: formData.salary_period,
+        is_salary_visible: true,
+        location_city: nullableString(formData.location_city),
+        location_state: nullableString(formData.location_state),
+        location_country: nullableString(formData.location_country),
+        application_deadline: formData.application_deadline || null,
+        vacancies: formData.vacancies ?? 1,
+    };
 }
 
 export function EmployerJobFormPage() {
@@ -146,19 +187,17 @@ export function EmployerJobFormPage() {
 
     const mutation = useMutation({
         mutationFn: (formData: JobFormData) => {
-            const payload = {
-                ...formData,
-                salary_min: formData.salary_min === '' ? null : Number(formData.salary_min),
-                salary_max: formData.salary_max === '' ? null : Number(formData.salary_max),
-                application_deadline: formData.application_deadline || null,
-            };
+            const payload = normalizeJobPayload(formData);
             return isEdit ? employerApi.jobs.update(uuid!, payload) : employerApi.jobs.create(payload);
         },
-        onSuccess: (savedJob) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['employer', 'jobs'] });
             queryClient.invalidateQueries({ queryKey: ['employer', 'dashboard'] });
+            if (isEdit && uuid) {
+                queryClient.invalidateQueries({ queryKey: ['employer', 'jobs', uuid] });
+            }
             toast.success(isEdit ? 'Job updated' : 'Job created');
-            navigate(`/employer/jobs/${savedJob.uuid}/edit`);
+            navigate('/employer/jobs');
         },
         onError: (err) => toast.error(getApiErrorMessage(err, isEdit ? 'Failed to update job' : 'Failed to create job')),
     });
@@ -331,9 +370,9 @@ export function EmployerJobFormPage() {
                                     name="salary_period"
                                     control={control}
                                     render={({ field }) => (
-                                        <Select value={field.value ?? 'yearly'} onValueChange={field.onChange}>
+                                        <Select value={field.value} onValueChange={field.onChange}>
                                             <SelectTrigger>
-                                                <SelectValue />
+                                                <SelectValue placeholder="Select period" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {salaryPeriods.map((period) => (
@@ -365,7 +404,15 @@ export function EmployerJobFormPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="application_deadline">Application deadline</Label>
-                            <Input id="application_deadline" type="date" {...register('application_deadline')} />
+                            <Input
+                                id="application_deadline"
+                                type="date"
+                                min={today}
+                                {...register('application_deadline')}
+                            />
+                            {errors.application_deadline && (
+                                <p className="text-sm text-destructive">{errors.application_deadline.message}</p>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

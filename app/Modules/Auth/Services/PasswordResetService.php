@@ -12,7 +12,7 @@ class PasswordResetService
 {
     public function sendResetLink(string $email): string
     {
-        return Password::sendResetLink(['email' => $email]);
+        return Password::sendResetLink(['email' => strtolower($email)]);
     }
 
     /**

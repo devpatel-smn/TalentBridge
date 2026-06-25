@@ -25,12 +25,36 @@ export const adminApi = {
         const { data } = await apiClient.get(`/admin/users?${buildQuery(params)}`);
         return data;
     },
+    user: async (id: number) => {
+        const { data } = await apiClient.get<ApiResponse<Record<string, unknown>>>(`/admin/users/${id}`);
+        return data.data;
+    },
+    createUser: async (payload: Record<string, unknown>) => {
+        const { data } = await apiClient.post<ApiResponse<Record<string, unknown>>>('/admin/users', payload);
+        return data.data;
+    },
+    updateUser: async (id: number, payload: Record<string, unknown>) => {
+        const { data } = await apiClient.put<ApiResponse<Record<string, unknown>>>(`/admin/users/${id}`, payload);
+        return data.data;
+    },
     updateUserStatus: async (id: number, status: string) => {
         await apiClient.patch(`/admin/users/${id}/status`, { status });
+    },
+    jobSeekers: async (params?: ListParams) => {
+        const { data } = await apiClient.get(`/admin/job-seekers?${buildQuery(params)}`);
+        return data;
+    },
+    jobSeeker: async (uuid: string) => {
+        const { data } = await apiClient.get<ApiResponse<Record<string, unknown>>>(`/admin/job-seekers/${uuid}`);
+        return data.data;
     },
     companies: async (params?: ListParams) => {
         const { data } = await apiClient.get(`/admin/companies?${buildQuery(params)}`);
         return data;
+    },
+    company: async (uuid: string) => {
+        const { data } = await apiClient.get<ApiResponse<Record<string, unknown>>>(`/admin/companies/${uuid}`);
+        return data.data;
     },
     jobs: async (params?: ListParams) => {
         const { data } = await apiClient.get(`/admin/jobs?${buildQuery(params)}`);

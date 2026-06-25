@@ -3,25 +3,44 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth-store';
 import { authApi } from '@/features/auth/api/auth-api';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { isPublicAuthPath, normalizeAuthPathname } from '@/lib/auth-paths';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const queryClient = useQueryClient();
     const { setUser, clearAuth } = useAuthStore();
-    const [isInitializing, setIsInitializing] = useState(true);
+    const skipSessionBootstrap = isPublicAuthPath(normalizeAuthPathname(window.location.pathname));
+    const [isInitializing, setIsInitializing] = useState(() => !skipSessionBootstrap);
 
     useEffect(() => {
+        if (skipSessionBootstrap) {
+            return;
+        }
+
+        let cancelled = false;
+
         const init = async () => {
             try {
                 const user = await authApi.me();
-                setUser(user);
+                if (!cancelled) {
+                    setUser(user);
+                }
             } catch {
-                clearAuth();
+                if (!cancelled) {
+                    clearAuth();
+                }
             } finally {
-                setIsInitializing(false);
+                if (!cancelled) {
+                    setIsInitializing(false);
+                }
             }
         };
+
         void init();
-    }, [setUser, clearAuth]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [setUser, clearAuth, skipSessionBootstrap]);
 
     useEffect(() => {
         const handler = () => {

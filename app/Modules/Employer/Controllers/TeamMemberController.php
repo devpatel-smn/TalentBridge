@@ -51,7 +51,9 @@ class TeamMemberController extends Controller
 
         return $this->created(
             new TeamMemberResource($member),
-            'Team member invited successfully.'
+            $member->is_active && $member->joined_at !== null
+                ? 'Team member added successfully.'
+                : 'Team invitation sent successfully.'
         );
     }
 

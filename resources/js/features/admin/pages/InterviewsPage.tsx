@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { TableCard } from '@/components/common/TableCard';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDateTime } from '@/lib/utils';
@@ -110,27 +111,32 @@ export function AdminInterviewsPage() {
             <PageHeader
                 title="Interviews"
                 description="Monitor scheduled and completed interviews across the platform."
+                breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Interviews' }]}
             />
 
-            <SearchInput
-                value={search}
-                onChange={(value) => {
-                    setSearch(value);
-                    setPage(1);
-                }}
-                placeholder="Search interviews..."
-                className="max-w-md"
-            />
-
-            <DataTable
-                columns={columns}
-                data={interviews}
-                isLoading={isLoading}
-                emptyTitle="No interviews found"
-                emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
-            />
-
-            {pagination && <Pagination meta={pagination} onPageChange={setPage} />}
+            <TableCard
+                toolbar={
+                    <SearchInput
+                        value={search}
+                        onChange={(value) => {
+                            setSearch(value);
+                            setPage(1);
+                        }}
+                        placeholder="Search interviews..."
+                        className="w-full sm:max-w-sm"
+                    />
+                }
+                footer={pagination ? <Pagination meta={pagination} onPageChange={setPage} /> : undefined}
+            >
+                <DataTable
+                    columns={columns}
+                    data={interviews}
+                    isLoading={isLoading}
+                    emptyTitle="No interviews found"
+                    emptyDescription={debouncedSearch ? 'Try adjusting your search terms.' : undefined}
+                    variant="embedded"
+                />
+            </TableCard>
         </div>
     );
 }

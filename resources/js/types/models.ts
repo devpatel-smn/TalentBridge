@@ -25,6 +25,40 @@ export interface EmployerContext {
     is_active: boolean;
 }
 
+export interface TeamMember {
+    id: number;
+    job_title: string | null;
+    is_primary: boolean;
+    is_active: boolean;
+    invite_pending?: boolean;
+    joined_at: string | null;
+    user?: {
+        uuid: string;
+        first_name: string;
+        last_name: string;
+        full_name: string;
+        email: string;
+    };
+    invited_by?: {
+        uuid: string;
+        full_name: string;
+    } | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface InviteTeamMemberPayload {
+    email: string;
+    job_title?: string | null;
+    is_primary?: boolean;
+}
+
+export interface UpdateTeamMemberPayload {
+    job_title?: string | null;
+    is_primary?: boolean;
+    is_active?: boolean;
+}
+
 export interface User {
     id: number;
     uuid: string;
@@ -128,6 +162,11 @@ export interface JobApplication {
         headline?: string;
         user?: { full_name: string; email: string };
     };
+    candidate?: {
+        uuid: string;
+        headline?: string;
+        user?: { full_name: string; email: string };
+    };
     status_history?: ApplicationStatusHistory[];
 }
 
@@ -153,8 +192,53 @@ export interface Interview {
     instructions?: string | null;
     feedback?: string | null;
     rating?: number | null;
-    job_application?: JobApplication;
+    completed_at?: string | null;
+    cancelled_at?: string | null;
+    cancellation_reason?: string | null;
+    company?: { uuid: string; name: string; slug?: string };
+    job_application?: JobApplication & {
+        candidate?: {
+            uuid: string;
+            headline?: string | null;
+            user?: { uuid: string; full_name: string; email: string };
+        };
+    };
+    scheduler?: { uuid: string; full_name: string };
     participants?: InterviewParticipant[];
+    status_history?: InterviewStatusHistory[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface InterviewStatusHistory {
+    from_status: InterviewStatus | null;
+    to_status: InterviewStatus;
+    notes?: string | null;
+    changed_by?: { uuid: string; full_name: string } | null;
+    created_at: string;
+}
+
+export interface ScheduleInterviewPayload {
+    application_uuid: string;
+    interview_type: InterviewType;
+    scheduled_at: string;
+    timezone: string;
+    title?: string;
+    duration_minutes?: number;
+    location?: string;
+    meeting_link?: string;
+    instructions?: string;
+}
+
+export interface RescheduleInterviewPayload {
+    scheduled_at: string;
+    timezone?: string;
+    duration_minutes?: number;
+    location?: string;
+    meeting_link?: string;
+    instructions?: string;
+    title?: string;
+    notes?: string;
 }
 
 export interface InterviewParticipant {

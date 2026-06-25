@@ -99,6 +99,16 @@ export const jobSeekerApi = {
             );
             return data;
         },
+        upcoming: async (params?: ListParams) => {
+            const { data } = await apiClient.get<ApiResponse<Interview[]>>(
+                `/job-seeker/interviews/upcoming?${buildQuery(params)}`,
+            );
+            return data;
+        },
+        get: async (uuid: string) => {
+            const { data } = await apiClient.get<ApiResponse<Interview>>(`/job-seeker/interviews/${uuid}`);
+            return data.data;
+        },
         respond: async (uuid: string, response: 'accepted' | 'declined') => {
             await apiClient.patch(`/job-seeker/interviews/${uuid}/respond`, { response });
         },

@@ -11,4 +11,8 @@ return [
         'bcrypt_rounds' => (int) env('BCRYPT_ROUNDS', 12),
     ],
 
+    'team_invitation' => [
+        'expire_hours' => (int) env('TEAM_INVITATION_EXPIRE_HOURS', 72),
+    ],
+
 ];

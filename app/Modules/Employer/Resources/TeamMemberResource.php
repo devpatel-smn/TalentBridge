@@ -33,6 +33,7 @@ class TeamMemberResource extends JsonResource
                 'uuid' => $this->inviter->uuid,
                 'full_name' => $this->inviter->full_name,
             ] : null),
+            'invite_pending' => ! $this->is_active && $this->joined_at === null,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

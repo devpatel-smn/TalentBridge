@@ -1,6 +1,5 @@
 import {
     Bookmark,
-    BriefcaseBusiness,
     FileText,
     LayoutDashboard,
     Search,

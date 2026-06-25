@@ -14,6 +14,8 @@ const statusVariantMap: Record<string, VariantProps<typeof badgeVariants>['varia
     pending: 'warning',
     pending_verification: 'warning',
     scheduled: 'default',
+    rescheduled: 'warning',
+    no_show: 'destructive',
     interview_scheduled: 'default',
     draft: 'secondary',
     inactive: 'secondary',

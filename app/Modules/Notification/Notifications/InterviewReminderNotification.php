@@ -25,7 +25,7 @@ class InterviewReminderNotification extends TalentBridgeNotification
             type: NotificationType::InterviewReminder,
             title: 'Interview Reminder',
             body: "{$reminderLabel}: {$title} is scheduled for {$scheduledAt}.",
-            actionUrl: "{$roleContext}/interviews/{$interviewUuid}",
+            actionUrl: "{$roleContext}/interviews?uuid={$interviewUuid}",
             icon: 'interview',
             entityType: 'interview',
             entityUuid: $interviewUuid,

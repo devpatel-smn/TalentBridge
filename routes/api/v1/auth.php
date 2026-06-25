@@ -3,17 +3,21 @@
 use App\Models\Role;
 use App\Modules\Application\Controllers\JobApplicationController;
 use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Auth\Controllers\TeamInvitationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->name('auth.')->group(function () {
+    Route::post('login', [AuthController::class, 'login'])->name('login');
+
     Route::middleware('throttle:auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->name('register');
-        Route::post('login', [AuthController::class, 'login'])->name('login');
     });
 
     Route::middleware('throttle:password-reset')->group(function () {
         Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
         Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
+        Route::get('team-invitations/preview', [TeamInvitationController::class, 'preview'])->name('team-invitations.preview');
+        Route::post('team-invitations/accept', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept');
     });
 
     Route::get('email/verify/{id}/{hash}', [AuthController::class, 'verifyEmailSigned'])

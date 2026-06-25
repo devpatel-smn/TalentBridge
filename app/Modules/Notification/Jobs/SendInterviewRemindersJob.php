@@ -58,6 +58,7 @@ class SendInterviewRemindersJob implements ShouldQueue
                     ->format('M j, Y g:i A T');
 
                 $candidate = $interview->jobApplication?->jobSeekerProfile?->user;
+                $candidateId = $candidate?->id;
 
                 if ($candidate instanceof User) {
                     $notificationService->dispatch(
@@ -66,7 +67,7 @@ class SendInterviewRemindersJob implements ShouldQueue
                             $title,
                             $scheduledAt,
                             $interview->uuid,
-                            '/job-seeker',
+                            'job-seeker',
                             $reminderLabel,
                         ),
                     );
@@ -79,14 +80,15 @@ class SendInterviewRemindersJob implements ShouldQueue
                         $scheduledAt,
                         $interview,
                         $reminderLabel,
+                        $candidateId,
                     ): void {
                         $user = $participant->user;
 
-                        if (! $user instanceof User) {
+                        if (! $user instanceof User || $user->id === $candidateId) {
                             return;
                         }
 
-                        $roleContext = $user->isEmployer() ? '/employer' : '/job-seeker';
+                        $roleContext = $user->isEmployer() ? 'employer' : 'job-seeker';
 
                         $notificationService->dispatch(
                             $user,

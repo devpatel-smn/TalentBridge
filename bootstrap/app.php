@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureCurrentHostIsStateful;
+use App\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Middleware\EnsureEmployerCompanyContext;
 use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
@@ -18,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        $middleware->prepend(EnsureCurrentHostIsStateful::class);
+        $middleware->api(prepend: [
+            EnsureFrontendRequestsAreStateful::class,
+        ]);
 
         $middleware->alias([
             'role' => RoleMiddleware::class,

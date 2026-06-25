@@ -6,7 +6,6 @@ use App\Enums\UserStatus;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
@@ -20,7 +19,7 @@ class AdminUserSeeder extends Seeder
             [
                 'first_name' => env('ADMIN_FIRST_NAME', 'System'),
                 'last_name' => env('ADMIN_LAST_NAME', 'Administrator'),
-                'password' => Hash::make($password),
+                'password' => $password,
                 'status' => UserStatus::Active,
                 'email_verified_at' => now(),
                 'timezone' => 'UTC',

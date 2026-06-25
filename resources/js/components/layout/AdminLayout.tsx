@@ -3,10 +3,10 @@ import {
     BriefcaseBusiness,
     Building2,
     ChartColumnBig,
-    ClipboardList,
     LayoutDashboard,
     ScrollText,
     Settings,
+    Shield,
     UsersRound,
     Video,
 } from 'lucide-react';
@@ -16,6 +16,7 @@ import { Outlet } from 'react-router-dom';
 
 const adminNav: NavItem[] = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'Admins', href: '/admin/admins', icon: Shield },
     { label: 'Users', href: '/admin/users', icon: UsersRound },
     { label: 'Companies', href: '/admin/companies', icon: Building2 },
     { label: 'Jobs', href: '/admin/jobs', icon: BriefcaseBusiness },

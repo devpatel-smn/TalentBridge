@@ -33,7 +33,9 @@ export const authApi = {
     },
 
     async logout(): Promise<void> {
+        await ensureCsrfCookie();
         await apiClient.post('/auth/logout');
+        await ensureCsrfCookie();
     },
 
     async me(): Promise<User> {
@@ -42,6 +44,7 @@ export const authApi = {
     },
 
     async forgotPassword(email: string): Promise<void> {
+        await ensureCsrfCookie();
         await apiClient.post('/auth/forgot-password', { email });
     },
 
@@ -51,6 +54,7 @@ export const authApi = {
         password_confirmation: string;
         token: string;
     }): Promise<void> {
+        await ensureCsrfCookie();
         await apiClient.post('/auth/reset-password', payload);
     },
 
@@ -64,5 +68,28 @@ export const authApi = {
 
     async resendVerification(): Promise<void> {
         await apiClient.post('/auth/email/verify/resend');
+    },
+
+    async previewTeamInvitation(payload: { token: string; email: string }) {
+        const { data } = await apiClient.get<ApiResponse<{
+            email: string;
+            job_title: string | null;
+            company: { name: string };
+            invited_by: { full_name: string };
+        }>>('/auth/team-invitations/preview', { params: payload });
+        return data.data;
+    },
+
+    async acceptTeamInvitation(payload: {
+        token: string;
+        email: string;
+        first_name: string;
+        last_name: string;
+        password: string;
+        password_confirmation: string;
+    }): Promise<User> {
+        await ensureCsrfCookie();
+        const { data } = await apiClient.post<ApiResponse<User>>('/auth/team-invitations/accept', payload);
+        return data.data;
     },
 };

@@ -8,9 +8,9 @@ import {
     Clock,
     ExternalLink,
     MapPin,
-    Video,
     X,
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Pagination } from '@/components/common/Pagination';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -18,27 +18,145 @@ import { EmptyState, ErrorState } from '@/components/common/EmptyState';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
+import { canJobSeekerRespond } from '@/features/interviews/lib/interview-utils';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import { formatDateTime, titleCase } from '@/lib/utils';
-import type { Interview } from '@/types/models';
+import type { Interview, InterviewStatus } from '@/types/models';
 
-function canRespond(interview: Interview): boolean {
+type InterviewTab = 'upcoming' | 'scheduled' | 'completed' | 'cancelled';
+
+const TAB_STATUS: Record<InterviewTab, InterviewStatus | undefined> = {
+    upcoming: undefined,
+    scheduled: 'scheduled',
+    completed: 'completed',
+    cancelled: 'cancelled',
+};
+
+function InterviewCard({
+    interview,
+    onRespond,
+    respondingUuid,
+    isResponding,
+}: {
+    interview: Interview;
+    onRespond: (uuid: string, response: 'accepted' | 'declined') => void;
+    respondingUuid: string | null;
+    isResponding: boolean;
+}) {
+    const companyName = interview.company?.name ?? interview.job_application?.job?.company?.name;
+
     return (
-        interview.status === 'scheduled' &&
-        new Date(interview.scheduled_at) > new Date()
+        <Card className="overflow-hidden transition-all hover:shadow-md">
+            <CardContent className="p-0">
+                <div className="border-l-4 border-l-primary p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="text-lg font-semibold">
+                                    {interview.title ??
+                                        interview.job_application?.job?.title ??
+                                        'Interview'}
+                                </h3>
+                                <StatusBadge status={interview.status} />
+                                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                                    {titleCase(interview.interview_type)}
+                                </span>
+                            </div>
+
+                            {companyName && (
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                    <Building2 className="h-3.5 w-3.5" />
+                                    {companyName}
+                                </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1.5">
+                                    <Calendar className="h-4 w-4" />
+                                    {formatDateTime(interview.scheduled_at)}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Clock className="h-4 w-4" />
+                                    {interview.duration_minutes} min · {interview.timezone}
+                                </span>
+                                {interview.location && (
+                                    <span className="flex items-center gap-1.5">
+                                        <MapPin className="h-4 w-4" />
+                                        {interview.location}
+                                    </span>
+                                )}
+                            </div>
+
+                            {interview.instructions && (
+                                <p className="max-w-2xl text-sm text-muted-foreground">{interview.instructions}</p>
+                            )}
+
+                            {interview.meeting_link && (
+                                <a
+                                    href={interview.meeting_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                                >
+                                    Join meeting
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                            )}
+                        </div>
+
+                        {canJobSeekerRespond(interview) && (
+                            <div className="flex shrink-0 gap-2">
+                                <Button
+                                    size="sm"
+                                    disabled={respondingUuid === interview.uuid && isResponding}
+                                    onClick={() => onRespond(interview.uuid, 'accepted')}
+                                >
+                                    <Check className="mr-1.5 h-4 w-4" />
+                                    Accept
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={respondingUuid === interview.uuid && isResponding}
+                                    onClick={() => onRespond(interview.uuid, 'declined')}
+                                >
+                                    <X className="mr-1.5 h-4 w-4" />
+                                    Decline
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 
 export function JobSeekerInterviewsPage() {
+    const [searchParams] = useSearchParams();
+    const highlightUuid = searchParams.get('uuid');
     const [page, setPage] = useState(1);
+    const [tab, setTab] = useState<InterviewTab>('upcoming');
     const [respondingUuid, setRespondingUuid] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['job-seeker', 'interviews', page],
-        queryFn: () => jobSeekerApi.interviews.list({ page, per_page: DEFAULT_PAGE_SIZE }),
+        queryKey: ['job-seeker', 'interviews', page, tab],
+        queryFn: () => {
+            if (tab === 'upcoming') {
+                return jobSeekerApi.interviews.upcoming({ page, per_page: DEFAULT_PAGE_SIZE });
+            }
+
+            const status = TAB_STATUS[tab];
+            return jobSeekerApi.interviews.list({
+                page,
+                per_page: DEFAULT_PAGE_SIZE,
+                filter: status ? { status } : undefined,
+            });
+        },
     });
 
     const respondMutation = useMutation({
@@ -48,12 +166,18 @@ export function JobSeekerInterviewsPage() {
             toast.success(response === 'accepted' ? 'Interview accepted' : 'Interview declined');
             setRespondingUuid(null);
             queryClient.invalidateQueries({ queryKey: ['job-seeker', 'interviews'] });
+            queryClient.invalidateQueries({ queryKey: ['job-seeker', 'dashboard'] });
         },
         onError: (error) => toast.error(getApiErrorMessage(error, 'Failed to respond')),
     });
 
     const interviews = data?.data ?? [];
     const meta = data?.meta?.pagination;
+
+    const handleRespond = (uuid: string, response: 'accepted' | 'declined') => {
+        setRespondingUuid(uuid);
+        respondMutation.mutate({ uuid, response });
+    };
 
     return (
         <div className="space-y-6">
@@ -62,116 +186,58 @@ export function JobSeekerInterviewsPage() {
                 description="View and respond to your scheduled interviews."
             />
 
-            {isLoading ? (
-                <LoadingSpinner label="Loading interviews..." />
-            ) : isError ? (
-                <ErrorState title="Unable to load interviews" onRetry={() => refetch()} />
-            ) : interviews.length === 0 ? (
-                <EmptyState
-                    icon={<Video className="h-6 w-6 text-muted-foreground" />}
-                    title="No interviews scheduled"
-                    description="When employers schedule interviews for your applications, they'll appear here."
-                />
-            ) : (
-                <>
-                    <div className="space-y-4">
-                        {interviews.map((interview) => (
-                            <Card key={interview.uuid} className="overflow-hidden transition-all hover:shadow-md">
-                                <CardContent className="p-0">
-                                    <div className="border-l-4 border-l-primary p-5">
-                                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                            <div className="space-y-3">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <h3 className="text-lg font-semibold">
-                                                        {interview.title ??
-                                                            interview.job_application?.job?.title ??
-                                                            'Interview'}
-                                                    </h3>
-                                                    <StatusBadge status={interview.status} />
-                                                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                                                        {titleCase(interview.interview_type)}
-                                                    </span>
-                                                </div>
+            <Tabs
+                value={tab}
+                onValueChange={(value) => {
+                    setTab(value as InterviewTab);
+                    setPage(1);
+                }}
+            >
+                <TabsList>
+                    <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                    <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+                    <TabsTrigger value="completed">Completed</TabsTrigger>
+                    <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+                </TabsList>
 
-                                                {interview.job_application?.job?.company && (
-                                                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                                        <Building2 className="h-3.5 w-3.5" />
-                                                        {interview.job_application.job.company.name}
-                                                    </div>
-                                                )}
-
-                                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                                    <span className="flex items-center gap-1.5">
-                                                        <Calendar className="h-4 w-4" />
-                                                        {formatDateTime(interview.scheduled_at)}
-                                                    </span>
-                                                    <span className="flex items-center gap-1.5">
-                                                        <Clock className="h-4 w-4" />
-                                                        {interview.duration_minutes} min
-                                                    </span>
-                                                    {interview.location && (
-                                                        <span className="flex items-center gap-1.5">
-                                                            <MapPin className="h-4 w-4" />
-                                                            {interview.location}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {interview.instructions && (
-                                                    <p className="max-w-2xl text-sm text-muted-foreground">
-                                                        {interview.instructions}
-                                                    </p>
-                                                )}
-
-                                                {interview.meeting_link && (
-                                                    <a
-                                                        href={interview.meeting_link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                                                    >
-                                                        Join meeting
-                                                        <ExternalLink className="h-3.5 w-3.5" />
-                                                    </a>
-                                                )}
-                                            </div>
-
-                                            {canRespond(interview) && (
-                                                <div className="flex shrink-0 gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        disabled={respondingUuid === interview.uuid && respondMutation.isPending}
-                                                        onClick={() => {
-                                                            setRespondingUuid(interview.uuid);
-                                                            respondMutation.mutate({ uuid: interview.uuid, response: 'accepted' });
-                                                        }}
-                                                    >
-                                                        <Check className="mr-1.5 h-4 w-4" />
-                                                        Accept
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        disabled={respondingUuid === interview.uuid && respondMutation.isPending}
-                                                        onClick={() => {
-                                                            setRespondingUuid(interview.uuid);
-                                                            respondMutation.mutate({ uuid: interview.uuid, response: 'declined' });
-                                                        }}
-                                                    >
-                                                        <X className="mr-1.5 h-4 w-4" />
-                                                        Decline
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
+                <TabsContent value={tab}>
+                    {isLoading ? (
+                        <LoadingSpinner label="Loading interviews..." />
+                    ) : isError ? (
+                        <ErrorState title="Unable to load interviews" onRetry={() => refetch()} />
+                    ) : interviews.length === 0 ? (
+                        <EmptyState
+                            icon={<Calendar className="h-6 w-6 text-muted-foreground" />}
+                            title="No interviews scheduled"
+                            description="When employers schedule interviews for your applications, they'll appear here."
+                        />
+                    ) : (
+                        <>
+                            <div className="space-y-4">
+                                {interviews.map((interview) => (
+                                    <div
+                                        key={interview.uuid}
+                                        id={`interview-${interview.uuid}`}
+                                        className={
+                                            highlightUuid === interview.uuid
+                                                ? 'rounded-xl ring-2 ring-primary ring-offset-2'
+                                                : undefined
+                                        }
+                                    >
+                                        <InterviewCard
+                                            interview={interview}
+                                            onRespond={handleRespond}
+                                            respondingUuid={respondingUuid}
+                                            isResponding={respondMutation.isPending}
+                                        />
                                     </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                    {meta && <Pagination meta={meta} onPageChange={setPage} />}
-                </>
-            )}
+                                ))}
+                            </div>
+                            {meta && <Pagination meta={meta} onPageChange={setPage} className="mt-4" />}
+                        </>
+                    )}
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

@@ -18,7 +18,16 @@ class JobDetailResource extends JobResource
         $isOwner = $request->user()
             && ($request->user()->isAdmin() || $request->user()->belongsToCompany($this->company_id));
 
-        return array_merge(parent::toArray($request), [
+        $data = parent::toArray($request);
+
+        if ($isOwner) {
+            $data['salary_min'] = $this->salary_min;
+            $data['salary_max'] = $this->salary_max;
+            $data['salary_currency'] = $this->salary_currency;
+            $data['salary_period'] = $this->salary_period;
+        }
+
+        return array_merge($data, [
             'description' => $this->description,
             'requirements' => $this->requirements,
             'responsibilities' => $this->responsibilities,
