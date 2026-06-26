@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LockKeyhole, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,16 @@ import { authApi } from '@/features/auth/api/auth-api';
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth-schemas';
 import { useAuthStore } from '@/stores/auth-store';
 import { DASHBOARD_ROUTES, ROLES } from '@/lib/constants';
+import { getAndClearReturnUrl, peekReturnUrl } from '@/lib/auth-redirect';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { PUBLIC_PATHS } from '@/lib/paths';
 
 export function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const setUser = useAuthStore((s) => s.setUser);
+    const stateFrom = (location.state as { from?: string } | null)?.from;
+    const returnTo = stateFrom ?? peekReturnUrl();
 
     const {
         register,
@@ -43,20 +48,23 @@ export function LoginPage() {
                 : user.roles.includes(ROLES.EMPLOYER)
                   ? ROLES.EMPLOYER
                   : ROLES.JOB_SEEKER;
-            navigate(DASHBOARD_ROUTES[role]);
+            const destination = stateFrom ?? getAndClearReturnUrl() ?? DASHBOARD_ROUTES[role];
+            navigate(destination);
         },
         onError: (error) => toast.error(getApiErrorMessage(error, 'Login failed')),
     });
 
     return (
-        <div className="space-y-7">
+        <div className="space-y-7 animate-fade-in">
             <div className="flex flex-col items-center gap-3 lg:hidden">
                 <AppLogo size="lg" showWordmark />
             </div>
             <div className="space-y-1.5 text-center lg:text-left">
                 <h2 className="text-2xl font-bold tracking-tight">Sign in</h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                    Enter your credentials to access your account
+                    {returnTo
+                        ? 'Please sign in to continue exploring TalentBridge.'
+                        : 'Enter your credentials to access your account'}
                 </p>
             </div>
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
@@ -105,7 +113,11 @@ export function LoginPage() {
             </form>
             <p className="pt-1 text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link to="/register" className="font-semibold text-primary hover:underline">
+                <Link
+                    to={PUBLIC_PATHS.register}
+                    state={returnTo ? { from: returnTo } : undefined}
+                    className="font-semibold text-primary hover:underline"
+                >
                     Create account
                 </Link>
             </p>

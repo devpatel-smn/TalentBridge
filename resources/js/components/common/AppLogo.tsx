@@ -8,9 +8,9 @@ interface AppLogoProps {
 }
 
 const sizes = {
-    sm: { box: 'h-8 w-8', svg: 18, text: 'text-base' },
-    md: { box: 'h-10 w-10', svg: 22, text: 'text-lg' },
-    lg: { box: 'h-12 w-12', svg: 26, text: 'text-xl' },
+    sm: { box: 'h-9 w-9', svg: 17, text: 'text-[0.9375rem]' },
+    md: { box: 'h-10 w-10', svg: 20, text: 'text-lg' },
+    lg: { box: 'h-12 w-12', svg: 24, text: 'text-xl' },
 };
 
 export function AppLogo({ size = 'md', showWordmark = false, variant = 'default', className }: AppLogoProps) {
@@ -20,10 +20,10 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
         <div className={cn('flex items-center gap-2.5', className)}>
             <div
                 className={cn(
-                    'relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm',
+                    'relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg',
                     variant === 'light'
-                        ? 'bg-white/15 ring-1 ring-white/25 backdrop-blur-sm'
-                        : 'gradient-brand shadow-elevation-1',
+                        ? 'bg-white/10 ring-1 ring-white/15'
+                        : 'bg-navy shadow-elevation-1',
                     s.box,
                 )}
             >
@@ -33,7 +33,7 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden="true"
-                    className="text-white"
+                    className={variant === 'light' ? 'text-white' : 'text-cream'}
                 >
                     <path
                         d="M4 16c3.5-2 5.5-2 8 0s4.5 2 8 0"
@@ -55,12 +55,12 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
             {showWordmark && (
                 <span
                     className={cn(
-                        'font-bold tracking-tight',
+                        'font-display font-medium tracking-tight',
                         s.text,
-                        variant === 'light' ? 'text-white' : 'text-gradient',
+                        variant === 'light' ? 'text-white' : 'text-foreground',
                     )}
                 >
-                    TalentBridge
+                    Talent<span className="text-accent-gold">Bridge</span>
                 </span>
             )}
         </div>

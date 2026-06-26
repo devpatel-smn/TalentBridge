@@ -13,9 +13,8 @@ const highlights = [
 export function AuthLayout() {
     return (
         <div className="relative flex min-h-screen">
-            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 text-white lg:flex">
-                <div className="absolute inset-0 gradient-brand" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15)_0%,_transparent_60%)]" />
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 text-white lg:flex surface-navy grain-overlay">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(268_40%_30%_/_0.2)_0%,_transparent_60%)]" />
                 <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
                 <div className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
 
@@ -25,7 +24,7 @@ export function AuthLayout() {
 
                 <div className="relative z-10 space-y-10">
                     <div className="space-y-4">
-                        <h1 className="text-4xl font-bold leading-[1.15] tracking-tight xl:text-5xl">
+                        <h1 className="font-display text-4xl font-medium leading-[1.15] tracking-tight xl:text-5xl">
                             The modern way to hire and get hired
                         </h1>
                         <p className="max-w-md text-lg leading-relaxed text-white/75">

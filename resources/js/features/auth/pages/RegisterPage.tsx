@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { authApi } from '@/features/auth/api/auth-api';
 import { registerSchema, type RegisterFormData } from '@/features/auth/schemas/auth-schemas';
-import { getApiErrorMessage } from '@/lib/api-client';
+import { peekReturnUrl } from '@/lib/auth-redirect';
+import { PUBLIC_PATHS } from '@/lib/paths';
 import { AppLogo } from '@/components/common/AppLogo';
 import { useAuthStore } from '@/stores/auth-store';
+import { getApiErrorMessage } from '@/lib/api-client';
 
 export function RegisterPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const setUser = useAuthStore((s) => s.setUser);
+    const stateFrom = (location.state as { from?: string } | null)?.from;
+    const returnTo = stateFrom ?? peekReturnUrl();
 
     const {
         register,
@@ -35,7 +40,11 @@ export function RegisterPage() {
         onSuccess: (user) => {
             setUser(user);
             toast.success('Account created! Please verify your email.');
-            navigate('/verify-email');
+            if (returnTo) {
+                navigate('/verify-email', { state: { from: returnTo } });
+            } else {
+                navigate('/verify-email');
+            }
         },
         onError: (error) => toast.error(getApiErrorMessage(error, 'Registration failed')),
     });
@@ -47,7 +56,11 @@ export function RegisterPage() {
             </div>
             <div className="space-y-1.5 text-center lg:text-left">
                 <h2 className="text-2xl font-bold tracking-tight">Create account</h2>
-                <p className="text-sm leading-relaxed text-muted-foreground">Join TalentBridge as an employer or job seeker</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                    {returnTo
+                        ? 'Please sign in to continue exploring TalentBridge.'
+                        : 'Join TalentBridge as an employer or job seeker'}
+                </p>
             </div>
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
@@ -104,7 +117,11 @@ export function RegisterPage() {
             </form>
             <p className="pt-1 text-center text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <Link to="/login" className="font-medium text-primary hover:underline">
+                <Link
+                    to={PUBLIC_PATHS.login}
+                    state={returnTo ? { from: returnTo } : undefined}
+                    className="font-medium text-primary hover:underline"
+                >
                     Sign in
                 </Link>
             </p>

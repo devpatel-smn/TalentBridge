@@ -10,12 +10,13 @@ import {
     UsersRound,
     Video,
 } from 'lucide-react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { WorkspaceLayout } from '@/components/layout/WorkspaceLayout';
 import type { NavItem } from '@/components/layout/Sidebar';
+import { ADMIN_PATHS } from '@/lib/paths';
 import { Outlet } from 'react-router-dom';
 
 const adminNav: NavItem[] = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'Dashboard', href: ADMIN_PATHS.dashboard, icon: LayoutDashboard },
     { label: 'Admins', href: '/admin/admins', icon: Shield },
     { label: 'Users', href: '/admin/users', icon: UsersRound },
     { label: 'Companies', href: '/admin/companies', icon: Building2 },
@@ -29,8 +30,8 @@ const adminNav: NavItem[] = [
 
 export function AdminLayout() {
     return (
-        <DashboardLayout navItems={adminNav}>
+        <WorkspaceLayout navItems={adminNav} variant="admin" subtitle="Administration">
             <Outlet />
-        </DashboardLayout>
+        </WorkspaceLayout>
     );
 }

@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatSalary, titleCase } from '@/lib/utils';
 import type { Job } from '@/types/models';
 
@@ -56,7 +57,7 @@ export function SavedJobsPage() {
                     icon={<Bookmark className="h-6 w-6 text-muted-foreground" />}
                     title="No saved jobs"
                     description="Save jobs while browsing to keep track of opportunities you're interested in."
-                    action={{ label: 'Browse jobs', onClick: () => { window.location.href = '/job-seeker/jobs'; } }}
+                    action={{ label: 'Browse jobs', onClick: () => { window.location.href = JOB_SEEKER_PATHS.jobs; } }}
                 />
             ) : (
                 <>
@@ -68,7 +69,7 @@ export function SavedJobsPage() {
                                     <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                                         <div className="space-y-2">
                                             <Link
-                                                to={`/job-seeker/jobs/${job.uuid}`}
+                                                to={JOB_SEEKER_PATHS.job(job.uuid)}
                                                 className="text-lg font-semibold hover:text-primary"
                                             >
                                                 {job.title}
@@ -95,7 +96,7 @@ export function SavedJobsPage() {
                                         </div>
                                         <div className="flex shrink-0 gap-2">
                                             <Button asChild variant="outline" size="sm">
-                                                <Link to={`/job-seeker/jobs/${job.uuid}`}>View</Link>
+                                                <Link to={JOB_SEEKER_PATHS.job(job.uuid)}>View</Link>
                                             </Button>
                                             <Button
                                                 variant="ghost"

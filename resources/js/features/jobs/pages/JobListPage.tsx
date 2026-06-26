@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, Building2, MapPin } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -88,21 +87,19 @@ export function JobListPage() {
     const meta = data?.meta?.pagination;
 
     return (
-        <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-                <div className="border-b bg-gradient-to-b from-primary/5 to-background">
-                    <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-                            Find your next opportunity
-                        </h1>
-                        <p className="mt-2 max-w-2xl text-lg text-muted-foreground">
-                            Browse open positions on {APP_NAME}. No account required to explore.
-                        </p>
-                    </div>
+        <>
+            <div className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background">
+                <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
+                    <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                        Find your next opportunity
+                    </h1>
+                    <p className="mt-2 max-w-2xl text-lg text-muted-foreground">
+                        Browse open positions on {APP_NAME}. No account required to explore.
+                    </p>
                 </div>
+            </div>
 
-                <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-6 lg:px-8">
                     <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm lg:flex-row lg:items-center">
                         <SearchInput
                             value={search}
@@ -177,7 +174,6 @@ export function JobListPage() {
                         </>
                     )}
                 </div>
-            </main>
-        </div>
+        </>
     );
 }

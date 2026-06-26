@@ -68,7 +68,7 @@ export function StatCard({
     return (
         <Card
             className={cn(
-                'h-full min-h-[8.75rem] overflow-hidden border-border/80 bg-card transition-all duration-200 hover:border-primary/25 hover:shadow-elevation-1',
+                'card-glow-hover h-full min-h-[8.75rem] overflow-hidden border-border/70 bg-card',
                 className,
             )}
         >
@@ -77,13 +77,13 @@ export function StatCard({
                     <p className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug text-muted-foreground">
                         {title}
                     </p>
-                    {icon && (
-                        <div className="shrink-0">{renderIcon(icon, iconVariant)}</div>
-                    )}
+                    {icon && <div className="shrink-0">{renderIcon(icon, iconVariant)}</div>}
                 </div>
 
                 <div className="mt-3">
-                    <p className="text-2xl font-bold tracking-tight tabular-nums text-foreground">{value}</p>
+                    <p className="font-display text-2xl font-medium tracking-tight tabular-nums text-foreground">
+                        {value}
+                    </p>
                     <div className="mt-1 flex min-h-[1rem] items-center gap-1.5 text-xs">
                         {trend === 'up' && (
                             <span className="flex items-center gap-0.5 font-medium text-success">

@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatDate, titleCase } from '@/lib/utils';
 import type { Resume } from '@/types/models';
 
@@ -53,7 +54,7 @@ export function ResumePage() {
             setTitle('');
             queryClient.invalidateQueries({ queryKey: ['job-seeker', 'resumes'] });
             if (resume.source === 'builder') {
-                window.location.href = `/job-seeker/resume/${resume.uuid}/builder`;
+                window.location.href = JOB_SEEKER_PATHS.resumeBuilder(resume.uuid);
             }
         },
         onError: (error) => toast.error(getApiErrorMessage(error, 'Failed to create resume')),
@@ -137,7 +138,7 @@ export function ResumePage() {
                                 <div className="flex flex-wrap gap-2">
                                     {resume.source === 'builder' && (
                                         <Button asChild variant="outline" size="sm">
-                                            <Link to={`/job-seeker/resume/${resume.uuid}/builder`}>
+                                            <Link to={JOB_SEEKER_PATHS.resumeBuilder(resume.uuid)}>
                                                 <FilePen className="mr-1.5 h-3.5 w-3.5" />
                                                 Edit
                                             </Link>

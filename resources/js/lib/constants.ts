@@ -16,7 +16,7 @@ export const ROLES = {
 export type UserRole = (typeof ROLES)[keyof typeof ROLES];
 
 export const DASHBOARD_ROUTES: Record<UserRole, string> = {
-    [ROLES.ADMIN]: '/admin',
+    [ROLES.ADMIN]: '/admin/dashboard',
     [ROLES.EMPLOYER]: '/employer',
-    [ROLES.JOB_SEEKER]: '/job-seeker',
+    [ROLES.JOB_SEEKER]: '/dashboard',
 };

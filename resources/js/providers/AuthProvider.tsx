@@ -3,12 +3,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth-store';
 import { authApi } from '@/features/auth/api/auth-api';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { isPublicAuthPath, normalizeAuthPathname } from '@/lib/auth-paths';
+import { normalizeAuthPathname, shouldSkipSessionBootstrap } from '@/lib/auth-paths';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const queryClient = useQueryClient();
     const { setUser, clearAuth } = useAuthStore();
-    const skipSessionBootstrap = isPublicAuthPath(normalizeAuthPathname(window.location.pathname));
+    const skipSessionBootstrap = shouldSkipSessionBootstrap(normalizeAuthPathname(window.location.pathname));
     const [isInitializing, setIsInitializing] = useState(() => !skipSessionBootstrap);
 
     useEffect(() => {

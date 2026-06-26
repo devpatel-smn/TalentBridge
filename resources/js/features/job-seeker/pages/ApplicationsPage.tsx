@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatDate } from '@/lib/utils';
 
 export function JobSeekerApplicationsPage() {
@@ -30,7 +31,7 @@ export function JobSeekerApplicationsPage() {
                 description="Track the status of every job you've applied to."
                 actions={
                     <Link
-                        to="/job-seeker/jobs"
+                        to={JOB_SEEKER_PATHS.jobs}
                         className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         Browse jobs
@@ -47,7 +48,7 @@ export function JobSeekerApplicationsPage() {
                     icon={<Send className="h-6 w-6 text-muted-foreground" />}
                     title="No applications yet"
                     description="Start applying to jobs and track your progress here."
-                    action={{ label: 'Find jobs', onClick: () => { window.location.href = '/job-seeker/jobs'; } }}
+                    action={{ label: 'Find jobs', onClick: () => { window.location.href = JOB_SEEKER_PATHS.jobs; } }}
                 />
             ) : (
                 <>
@@ -58,7 +59,7 @@ export function JobSeekerApplicationsPage() {
                                     <div className="space-y-2">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Link
-                                                to={`/job-seeker/jobs/${app.job?.uuid}`}
+                                                to={JOB_SEEKER_PATHS.job(app.job?.uuid ?? '')}
                                                 className="text-lg font-semibold hover:text-primary"
                                             >
                                                 {app.job?.title ?? 'Unknown position'}
@@ -86,7 +87,7 @@ export function JobSeekerApplicationsPage() {
                                     </div>
                                     {app.job?.uuid && (
                                         <Link
-                                            to={`/job-seeker/jobs/${app.job.uuid}`}
+                                            to={JOB_SEEKER_PATHS.job(app.job.uuid)}
                                             className="shrink-0 text-sm font-medium text-primary hover:underline"
                                         >
                                             View job →

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { jobsApi } from '@/features/jobs/api/jobs-api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatDate, formatSalary, titleCase } from '@/lib/utils';
 import type { EmploymentType, Job, WorkMode } from '@/types/models';
 
@@ -27,7 +28,7 @@ function JobCard({ job }: { job: Job }) {
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                     <CardTitle className="line-clamp-2 text-lg leading-snug group-hover:text-primary">
-                        <Link to={`/job-seeker/jobs/${job.uuid}`}>{job.title}</Link>
+                        <Link to={JOB_SEEKER_PATHS.job(job.uuid)}>{job.title}</Link>
                     </CardTitle>
                 </div>
                 {job.company && (
@@ -57,7 +58,7 @@ function JobCard({ job }: { job: Job }) {
             </CardContent>
             <CardFooter className="border-t bg-muted/30 pt-4">
                 <Link
-                    to={`/job-seeker/jobs/${job.uuid}`}
+                    to={JOB_SEEKER_PATHS.job(job.uuid)}
                     className="text-sm font-medium text-primary hover:underline"
                 >
                     View details →

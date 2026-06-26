@@ -26,12 +26,15 @@ import { authApi } from '@/features/auth/api/auth-api';
 import { getInitials } from '@/lib/utils';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 
+import type { WorkspaceVariant } from '@/components/layout/WorkspaceLayout';
+
 interface HeaderProps {
     onMenuClick?: () => void;
     showMenuButton?: boolean;
+    variant?: WorkspaceVariant;
 }
 
-export function Header({ onMenuClick, showMenuButton }: HeaderProps) {
+export function Header({ onMenuClick, showMenuButton, variant = 'seeker' }: HeaderProps) {
     const { user, clearAuth } = useAuth();
     const { setTheme, resolvedTheme } = useTheme();
 
@@ -39,8 +42,10 @@ export function Header({ onMenuClick, showMenuButton }: HeaderProps) {
         setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
     };
 
+    const logoutRedirect = variant === 'admin' ? '/admin/login' : '/login';
+
     return (
-        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-4 border-b border-header-border bg-header px-4 shadow-sm md:px-6">
+        <header className="header-glass-light sticky top-0 z-40 flex h-[4.5rem] shrink-0 items-center gap-4 px-4 md:px-6">
             {showMenuButton && (
                 <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick} aria-label="Open menu">
                     <Menu {...withIconDefaults({ className: 'h-5 w-5' })} />
@@ -113,7 +118,7 @@ export function Header({ onMenuClick, showMenuButton }: HeaderProps) {
                                     // Session may already be expired
                                 }
                                 clearAuth();
-                                window.location.href = '/login';
+                                window.location.href = logoutRedirect;
                             }}
                             className="text-destructive focus:text-destructive"
                         >

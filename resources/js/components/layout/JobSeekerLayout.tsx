@@ -8,25 +8,26 @@ import {
     UserRound,
     Video,
 } from 'lucide-react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { WorkspaceLayout } from '@/components/layout/WorkspaceLayout';
 import type { NavItem } from '@/components/layout/Sidebar';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { Outlet } from 'react-router-dom';
 
 const jobSeekerNav: NavItem[] = [
-    { label: 'Dashboard', href: '/job-seeker', icon: LayoutDashboard },
-    { label: 'Job Search', href: '/job-seeker/jobs', icon: Search },
-    { label: 'Applications', href: '/job-seeker/applications', icon: Send },
-    { label: 'Saved Jobs', href: '/job-seeker/saved-jobs', icon: Bookmark },
-    { label: 'Interviews', href: '/job-seeker/interviews', icon: Video },
-    { label: 'Profile', href: '/job-seeker/profile', icon: UserRound },
-    { label: 'Resume', href: '/job-seeker/resume', icon: FileText },
-    { label: 'Recommendations', href: '/job-seeker/recommendations', icon: Sparkles },
+    { label: 'Dashboard', href: JOB_SEEKER_PATHS.dashboard, icon: LayoutDashboard },
+    { label: 'Search Jobs', href: JOB_SEEKER_PATHS.jobs, icon: Search },
+    { label: 'Applications', href: JOB_SEEKER_PATHS.applications, icon: Send },
+    { label: 'Saved Jobs', href: JOB_SEEKER_PATHS.savedJobs, icon: Bookmark },
+    { label: 'Interviews', href: JOB_SEEKER_PATHS.interviews, icon: Video },
+    { label: 'Profile', href: JOB_SEEKER_PATHS.profile, icon: UserRound },
+    { label: 'Resume', href: JOB_SEEKER_PATHS.resume, icon: FileText },
+    { label: 'Recommendations', href: JOB_SEEKER_PATHS.recommendations, icon: Sparkles },
 ];
 
 export function JobSeekerLayout() {
     return (
-        <DashboardLayout navItems={jobSeekerNav}>
+        <WorkspaceLayout navItems={jobSeekerNav} variant="seeker" subtitle="Career workspace">
             <Outlet />
-        </DashboardLayout>
+        </WorkspaceLayout>
     );
 }

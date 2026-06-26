@@ -5,6 +5,18 @@ export const PUBLIC_AUTH_PATHS = [
     '/reset-password',
     '/verify-email',
     '/accept-team-invite',
+    '/admin/login',
+] as const;
+
+export const PUBLIC_MARKETING_PATHS = [
+    '/',
+    '/jobs',
+    '/companies',
+    '/about',
+    '/contact',
+    '/faq',
+    '/privacy',
+    '/terms',
 ] as const;
 
 export const AUTH_PATHS_WITHOUT_SESSION_REDIRECT = [
@@ -30,4 +42,21 @@ export function isAuthPathWithoutSessionRedirect(pathname: string): boolean {
     return AUTH_PATHS_WITHOUT_SESSION_REDIRECT.includes(
         normalizeAuthPathname(pathname) as (typeof AUTH_PATHS_WITHOUT_SESSION_REDIRECT)[number],
     );
+}
+
+export function isPublicMarketingPath(pathname: string): boolean {
+    const normalized = normalizeAuthPathname(pathname);
+    if (PUBLIC_MARKETING_PATHS.includes(normalized as (typeof PUBLIC_MARKETING_PATHS)[number])) {
+        return true;
+    }
+    return (
+        normalized.startsWith('/jobs/') ||
+        normalized.startsWith('/companies/') ||
+        normalized === '/login' ||
+        normalized === '/register'
+    );
+}
+
+export function shouldSkipSessionBootstrap(pathname: string): boolean {
+    return isPublicAuthPath(pathname) || isPublicMarketingPath(pathname);
 }

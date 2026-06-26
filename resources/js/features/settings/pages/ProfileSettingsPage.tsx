@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { DASHBOARD_ROUTES, ROLES } from '@/lib/constants';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatDate, getInitials, titleCase } from '@/lib/utils';
 
 export function ProfileSettingsPage() {
@@ -136,7 +137,7 @@ export function ProfileSettingsPage() {
                                             </p>
                                         </div>
                                         <Button asChild variant="outline" size="sm">
-                                            <Link to="/job-seeker/profile">Edit profile</Link>
+                                            <Link to={JOB_SEEKER_PATHS.profile}>Edit profile</Link>
                                         </Button>
                                     </div>
                                 </>

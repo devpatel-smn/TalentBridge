@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiClient } from '@/lib/api-client';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { formatSalary, titleCase } from '@/lib/utils';
 import type { ApiResponse } from '@/types/api';
 import type { Job } from '@/types/models';
@@ -48,7 +49,7 @@ export function RecommendationsPage() {
                     icon={<Sparkles className="h-6 w-6 text-muted-foreground" />}
                     title="No recommendations yet"
                     description="Complete your profile and start applying to jobs. We'll surface matched opportunities here as they become available."
-                    action={{ label: 'Complete profile', onClick: () => { window.location.href = '/job-seeker/profile'; } }}
+                    action={{ label: 'Complete profile', onClick: () => { window.location.href = JOB_SEEKER_PATHS.profile; } }}
                 />
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -61,7 +62,7 @@ export function RecommendationsPage() {
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between gap-2">
                                         <CardTitle className="line-clamp-2 text-lg">
-                                            <Link to={`/job-seeker/jobs/${job.uuid}`} className="hover:text-primary">
+                                            <Link to={JOB_SEEKER_PATHS.job(job.uuid)} className="hover:text-primary">
                                                 {job.title}
                                             </Link>
                                         </CardTitle>
@@ -93,7 +94,7 @@ export function RecommendationsPage() {
                                 </CardContent>
                                 <CardFooter className="border-t pt-4">
                                     <Button asChild variant="outline" size="sm" className="w-full">
-                                        <Link to={`/job-seeker/jobs/${job.uuid}`}>View job</Link>
+                                        <Link to={JOB_SEEKER_PATHS.job(job.uuid)}>View job</Link>
                                     </Button>
                                 </CardFooter>
                             </Card>

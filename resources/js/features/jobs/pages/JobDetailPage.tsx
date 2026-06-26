@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -8,11 +8,12 @@ import {
     Building2,
     Calendar,
     CheckCircle2,
+    LockKeyhole,
     MapPin,
     Send,
     Users,
 } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
+import { AuthPromptDialog } from '@/components/auth/AuthPromptDialog';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,8 @@ import { jobsApi } from '@/features/jobs/api/jobs-api';
 import { useAuth } from '@/hooks/useAuth';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { ROLES } from '@/lib/constants';
+import { setReturnUrl } from '@/lib/auth-redirect';
+import { isJobSeekerPath, JOB_SEEKER_PATHS, PUBLIC_PATHS } from '@/lib/paths';
 import { formatDate, formatSalary, titleCase } from '@/lib/utils';
 
 export function JobDetailPage() {
@@ -43,17 +46,27 @@ export function JobDetailPage() {
     const { isAuthenticated, role } = useAuth();
     const queryClient = useQueryClient();
     const [applyOpen, setApplyOpen] = useState(false);
+    const [authOpen, setAuthOpen] = useState(false);
     const [coverLetter, setCoverLetter] = useState('');
     const [resumeUuid, setResumeUuid] = useState<string>('');
 
-    const isJobSeekerContext = location.pathname.startsWith('/job-seeker');
-    const backHref = isJobSeekerContext ? '/job-seeker/jobs' : '/jobs';
+    const isJobSeekerContext = isJobSeekerPath(location.pathname);
+    const isPublicGuest = !isJobSeekerContext && !isAuthenticated;
+    const backHref = isJobSeekerContext ? JOB_SEEKER_PATHS.jobs : PUBLIC_PATHS.jobs;
+    const returnTo = location.pathname;
 
     const { data: job, isLoading, isError, refetch } = useQuery({
         queryKey: ['jobs', uuid],
         queryFn: () => jobsApi.get(uuid!),
-        enabled: !!uuid,
+        enabled: !!uuid && (isAuthenticated || isJobSeekerContext),
     });
+
+    useEffect(() => {
+        if (isPublicGuest) {
+            setReturnUrl(returnTo);
+            setAuthOpen(true);
+        }
+    }, [isPublicGuest, returnTo]);
 
     const { data: resumes = [] } = useQuery({
         queryKey: ['job-seeker', 'resumes'],
@@ -86,6 +99,47 @@ export function JobDetailPage() {
     });
 
     if (!uuid) return <ErrorState title="Invalid job" description="No job ID provided." />;
+
+    if (isPublicGuest) {
+        return (
+            <div className="mx-auto w-full max-w-3xl px-4 py-16 md:px-6 lg:px-8">
+                <Button asChild variant="ghost" className="mb-8 gap-2 pl-0">
+                    <Link to={backHref}>
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to jobs
+                    </Link>
+                </Button>
+                <div className="animate-scale-in rounded-2xl border border-border/60 bg-card p-8 text-center shadow-elevation-2 md:p-12">
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <LockKeyhole className="h-8 w-8" />
+                    </div>
+                    <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Sign in to view job details</h1>
+                    <p className="mx-auto mt-4 max-w-md text-muted-foreground">
+                        Please sign in to continue exploring TalentBridge. Unlock full job descriptions, salary
+                        information, employer details, and one-click applications.
+                    </p>
+                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                        <Button size="lg" className="rounded-xl" onClick={() => setAuthOpen(true)}>
+                            Sign in to continue
+                        </Button>
+                        <Button size="lg" variant="outline" asChild className="rounded-xl">
+                            <Link to={PUBLIC_PATHS.register} state={{ from: returnTo }}>
+                                Create free account
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+                <AuthPromptDialog
+                    open={authOpen}
+                    onOpenChange={setAuthOpen}
+                    returnTo={returnTo}
+                    title="Sign in to view this job"
+                    description="Please sign in to continue exploring TalentBridge."
+                />
+            </div>
+        );
+    }
+
     if (isLoading) return <LoadingSpinner label="Loading job details..." />;
     if (isError || !job) return <ErrorState title="Job not found" description="This job may have been removed." onRetry={() => refetch()} />;
 
@@ -229,9 +283,9 @@ export function JobDetailPage() {
                                 </div>
                             ) : !isAuthenticated ? (
                                 <div className="space-y-2">
-                                    <p className="text-sm text-muted-foreground">Sign in as a job seeker to apply.</p>
-                                    <Button asChild className="w-full">
-                                        <Link to="/login">Sign in to apply</Link>
+                                    <p className="text-sm text-muted-foreground">Sign in to apply and save this job.</p>
+                                    <Button className="w-full rounded-xl" onClick={() => setAuthOpen(true)}>
+                                        Sign in to apply
                                     </Button>
                                 </div>
                             ) : null}
@@ -295,11 +349,8 @@ export function JobDetailPage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6 lg:px-8">
-                {content}
-            </main>
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+            {content}
         </div>
     );
 }

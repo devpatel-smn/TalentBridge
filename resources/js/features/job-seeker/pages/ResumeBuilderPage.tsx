@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { JOB_SEEKER_PATHS } from '@/lib/paths';
 import { titleCase } from '@/lib/utils';
 import type { ResumeSection } from '@/types/models';
 
@@ -131,7 +132,7 @@ export function ResumeBuilderPage() {
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <Button asChild variant="ghost" size="icon">
-                    <Link to="/job-seeker/resume">
+                    <Link to={JOB_SEEKER_PATHS.resume}>
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>

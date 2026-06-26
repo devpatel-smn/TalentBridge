@@ -23,8 +23,12 @@ export function PageSection({
             {(title || actions) && (
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        {title && <h2 className="text-base font-semibold tracking-tight">{title}</h2>}
-                        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+                        {title && (
+                            <h2 className="font-display text-lg font-medium tracking-tight md:text-xl">{title}</h2>
+                        )}
+                        {description && (
+                            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+                        )}
                     </div>
                     {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
                 </div>
