@@ -8,49 +8,58 @@ interface AppLogoProps {
 }
 
 const sizes = {
-    sm: { box: 'h-9 w-9', svg: 17, text: 'text-[0.9375rem]' },
-    md: { box: 'h-10 w-10', svg: 20, text: 'text-lg' },
-    lg: { box: 'h-12 w-12', svg: 24, text: 'text-xl' },
+    sm: { box: 'h-11 w-11', svg: 20, text: 'text-[1.0625rem]' },
+    md: { box: 'h-12 w-12', svg: 22, text: 'text-[1.2rem]' },
+    lg: { box: 'h-14 w-14', svg: 26, text: 'text-[1.45rem]' },
 };
+
+function LogoMark({ size, variant }: { size: number; variant: 'default' | 'light' }) {
+    const gradientId = `tb-mark-${variant}`;
+    const accent = variant === 'light' ? '#ef9846' : '#d47a2a';
+
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <defs>
+                <linearGradient id={gradientId} x1="4" y1="5" x2="20" y2="19" gradientUnits="userSpaceOnUse">
+                    <stop stopColor={variant === 'light' ? '#FFFFFF' : '#f9f5ee'} />
+                    <stop offset="1" stopColor={variant === 'light' ? '#fde4d2' : '#f3ece0'} />
+                </linearGradient>
+            </defs>
+            <rect x="5.5" y="6.5" width="3" height="11" rx="1.5" fill={`url(#${gradientId})`} />
+            <rect x="15.5" y="6.5" width="3" height="11" rx="1.5" fill={`url(#${gradientId})`} />
+            <path
+                d="M8.75 11.25h6.5M8.75 13.75h6.5"
+                stroke={accent}
+                strokeWidth="1.35"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.25 17.25c2.1-1.15 3.65-1.75 4.75-1.75s2.65.6 4.75 1.75"
+                stroke={`url(#${gradientId})`}
+                strokeWidth="1.75"
+                strokeLinecap="round"
+            />
+            <circle cx="7" cy="5.75" r="1.35" fill={accent} />
+            <circle cx="17" cy="5.75" r="1.35" fill={accent} />
+        </svg>
+    );
+}
 
 export function AppLogo({ size = 'md', showWordmark = false, variant = 'default', className }: AppLogoProps) {
     const s = sizes[size];
 
     return (
-        <div className={cn('flex items-center gap-2.5', className)}>
+        <div className={cn('flex items-center gap-3', className)}>
             <div
                 className={cn(
-                    'relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg',
+                    'relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl',
                     variant === 'light'
-                        ? 'bg-white/10 ring-1 ring-white/15'
-                        : 'bg-navy shadow-elevation-1',
+                        ? 'bg-white/10 ring-1 ring-white/15 shadow-[0_10px_28px_-18px_rgba(255,255,255,0.55)]'
+                        : 'bg-[linear-gradient(145deg,hsl(var(--navy))_0%,hsl(37_13%_19%)_55%,hsl(var(--navy))_100%)] shadow-elevation-1 ring-1 ring-navy/10',
                     s.box,
                 )}
             >
-                <svg
-                    width={s.svg}
-                    height={s.svg}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden="true"
-                    className={variant === 'light' ? 'text-white' : 'text-cream'}
-                >
-                    <path
-                        d="M4 16c3.5-2 5.5-2 8 0s4.5 2 8 0"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                    />
-                    <path
-                        d="M6 16V9.5c0-1.1.9-2 2-2h1.5M18 16V9.5c0-1.1-.9-2-2-2h-1.5"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                    />
-                    <circle cx="8" cy="7" r="1.75" fill="currentColor" />
-                    <circle cx="16" cy="7" r="1.75" fill="currentColor" />
-                    <path d="M10 16h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-                </svg>
+                <LogoMark size={s.svg} variant={variant} />
             </div>
             {showWordmark && (
                 <span

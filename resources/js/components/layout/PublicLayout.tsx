@@ -7,7 +7,7 @@ export function PublicLayout() {
     return (
         <div className="flex min-h-screen min-w-0 flex-col">
             <PublicHeader />
-            <main className="min-w-0 flex-1 overflow-x-hidden pt-[4.5rem]">
+            <main className="min-w-0 flex-1 overflow-x-hidden">
                 <PageTransition>
                     <Outlet />
                 </PageTransition>

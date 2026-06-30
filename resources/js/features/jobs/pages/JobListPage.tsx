@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Briefcase, Building2, MapPin } from 'lucide-react';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
@@ -62,18 +62,30 @@ function PublicJobCard({ job }: { job: Job }) {
 }
 
 export function JobListPage() {
-    const [search, setSearch] = useState('');
+    const [searchParams] = useSearchParams();
+    const [search, setSearch] = useState(() => searchParams.get('search') ?? '');
+    const location = searchParams.get('location') ?? '';
+    const [categoryId, setCategoryId] = useState(() => searchParams.get('category_id') ?? 'all');
     const [workMode, setWorkMode] = useState('all');
     const [employmentType, setEmploymentType] = useState('all');
     const [page, setPage] = useState(1);
     const debouncedSearch = useDebounce(search, 400);
+    const debouncedLocation = useDebounce(location, 400);
+
+    const { data: categories = [] } = useQuery({
+        queryKey: ['job-categories', 'job-list'],
+        queryFn: jobsApi.categories,
+        staleTime: 10 * 60 * 1000,
+    });
 
     const filters: Record<string, string> = {};
+    if (categoryId !== 'all') filters.category_id = categoryId;
     if (workMode !== 'all') filters.work_mode = workMode;
     if (employmentType !== 'all') filters.employment_type = employmentType;
+    if (debouncedLocation.trim()) filters.location_city = debouncedLocation.trim();
 
     const { data, isLoading, isError, refetch, isFetching } = useQuery({
-        queryKey: ['jobs', 'public', debouncedSearch, workMode, employmentType, page],
+        queryKey: ['jobs', 'public', debouncedSearch, debouncedLocation, categoryId, workMode, employmentType, page],
         queryFn: () =>
             jobsApi.list({
                 page,
@@ -88,7 +100,7 @@ export function JobListPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background">
+            <div className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background pt-header">
                 <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
                     <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
                         Find your next opportunity
@@ -110,6 +122,25 @@ export function JobListPage() {
                             placeholder="Search jobs..."
                             className="flex-1"
                         />
+                        <Select
+                            value={categoryId}
+                            onValueChange={(v) => {
+                                setCategoryId(v);
+                                setPage(1);
+                            }}
+                        >
+                            <SelectTrigger className="w-full lg:w-52">
+                                <SelectValue placeholder="Field / Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All categories</SelectItem>
+                                {categories.map((category) => (
+                                    <SelectItem key={category.id} value={String(category.id)}>
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <Select
                             value={workMode}
                             onValueChange={(v) => {

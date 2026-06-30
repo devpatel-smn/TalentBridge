@@ -102,7 +102,7 @@ export function JobDetailPage() {
 
     if (isPublicGuest) {
         return (
-            <div className="mx-auto w-full max-w-3xl px-4 py-16 md:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-header md:px-6 lg:px-8">
                 <Button asChild variant="ghost" className="mb-8 gap-2 pl-0">
                     <Link to={backHref}>
                         <ArrowLeft className="h-4 w-4" />
@@ -349,7 +349,7 @@ export function JobDetailPage() {
     }
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-header md:px-6 lg:px-8">
             {content}
         </div>
     );

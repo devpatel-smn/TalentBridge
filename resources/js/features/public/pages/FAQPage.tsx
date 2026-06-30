@@ -34,7 +34,7 @@ export function FAQPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30">
+            <div className="border-b border-border/60 bg-muted/30 pt-header">
                 <div className="mx-auto max-w-3xl px-4 py-16 text-center md:px-6">
                     <h1 className="text-4xl font-bold tracking-tight">Frequently asked questions</h1>
                     <p className="mt-4 text-lg text-muted-foreground">Everything you need to know about TalentBridge</p>

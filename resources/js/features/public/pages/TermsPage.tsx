@@ -1,7 +1,7 @@
 export function TermsPage() {
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30">
+            <div className="border-b border-border/60 bg-muted/30 pt-header">
                 <div className="mx-auto max-w-3xl px-4 py-16 md:px-6">
                     <h1 className="text-4xl font-bold tracking-tight">Terms of Service</h1>
                     <p className="mt-4 text-muted-foreground">Last updated: June 2026</p>

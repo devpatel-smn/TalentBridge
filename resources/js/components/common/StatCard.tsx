@@ -68,7 +68,7 @@ export function StatCard({
     return (
         <Card
             className={cn(
-                'card-glow-hover h-full min-h-[8.75rem] overflow-hidden border-border/70 bg-card',
+                'card-glow-hover h-full min-h-[8.75rem] overflow-hidden',
                 className,
             )}
         >

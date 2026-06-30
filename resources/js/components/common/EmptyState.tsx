@@ -37,15 +37,15 @@ export function EmptyState({ icon, title, description, action, className }: Empt
     return (
         <div
             className={cn(
-                'flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 py-20 text-center',
+                'flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/25 px-6 py-20 text-center dark:bg-muted/15',
                 className,
             )}
         >
             {renderEmptyIcon(icon)}
-            <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+            <h3 className="font-display text-lg font-medium tracking-tight">{title}</h3>
             {description && <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">{description}</p>}
             {action && (
-                <Button className="mt-6 rounded-xl" onClick={action.onClick}>
+                <Button className="mt-6" onClick={action.onClick}>
                     {action.label}
                 </Button>
             )}
@@ -72,10 +72,10 @@ export function ErrorState({
             )}
         >
             <IconBox icon={TriangleAlert} variant="warning" size="lg" className="mb-5 bg-destructive/10 text-destructive" />
-            <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+            <h3 className="font-display text-lg font-medium tracking-tight">{title}</h3>
             {description && <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">{description}</p>}
             {onRetry && (
-                <Button variant="outline" className="mt-6 rounded-xl" onClick={onRetry}>
+                <Button variant="outline" className="mt-6" onClick={onRetry}>
                     Try again
                 </Button>
             )}

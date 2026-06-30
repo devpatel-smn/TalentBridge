@@ -20,6 +20,10 @@ export const registerSchema = z
             .regex(/[^A-Za-z0-9]/, 'Must contain a symbol'),
         password_confirmation: z.string(),
         phone: z.string().max(20).optional(),
+        city: z.string().max(100).optional(),
+        state: z.string().max(100).optional(),
+        zip: z.string().max(20).optional(),
+        country: z.string().max(100).optional(),
         role: z.enum(['employer', 'job_seeker']),
         company_name: z.string().max(255).optional(),
     })

@@ -90,7 +90,7 @@ export function CompanyDetailPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30">
+            <div className="border-b border-border/60 bg-muted/30 pt-header">
                 <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
                     <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2 rounded-xl">
                         <Link to={PUBLIC_PATHS.companies}>

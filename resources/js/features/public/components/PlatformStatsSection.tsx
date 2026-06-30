@@ -3,8 +3,8 @@ import { jobsApi } from '@/features/jobs/api/jobs-api';
 import { AnimatedCounter } from '@/components/common/AnimatedCounter';
 
 const baseStats = [
-    { label: 'Active job seekers', value: '50K+', accent: 'text-secondary' },
-    { label: 'Verified companies', value: '2,500+', accent: 'text-accent-purple' },
+    { label: 'Active job seekers', value: '50K+', accent: 'text-success' },
+    { label: 'Verified companies', value: '2,500+', accent: 'text-secondary' },
     { label: 'Successful placements', value: '18K+', accent: 'text-gold' },
     { label: 'Countries served', value: '45+', accent: 'text-info' },
 ];
@@ -25,7 +25,7 @@ export function PlatformStatsSection() {
 
     return (
         <section className="surface-navy grain-overlay relative">
-            <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-11 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-9 lg:px-8">
                 <div className="grid grid-cols-2 divide-x divide-white/10 lg:grid-cols-4">
                     {stats.map((stat, i) => (
                         <div
@@ -35,7 +35,7 @@ export function PlatformStatsSection() {
                             <p className={`font-display text-4xl font-medium tracking-tight md:text-5xl ${stat.accent}`}>
                                 <AnimatedCounter value={stat.value} />
                             </p>
-                            <p className="mt-2 text-xs font-medium uppercase tracking-[0.15em] text-white/45">
+                            <p className="mt-2 text-xs font-medium uppercase tracking-[0.15em] text-on-dark-subtle">
                                 {stat.label}
                             </p>
                         </div>

@@ -14,10 +14,10 @@ export function ContactPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30">
-                <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 lg:px-8">
-                    <h1 className="text-4xl font-bold tracking-tight">Contact us</h1>
-                    <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+            <div className="page-hero">
+                <div className="page-hero-inner">
+                    <h1 className="page-hero-title">Contact us</h1>
+                    <p className="page-hero-description max-w-xl">
                         Have a question or want to partner with us? We&apos;d love to hear from you.
                     </p>
                 </div>
@@ -32,11 +32,11 @@ export function ContactPage() {
                             { icon: MapPin, label: 'Headquarters', value: 'San Francisco, CA' },
                         ].map((item) => (
                             <div key={item.label} className="flex items-start gap-4">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                    <item.icon className="h-5 w-5" />
+                                <div className="icon-box-md bg-primary/10 text-primary dark:bg-gold/12 dark:text-gold">
+                                    <item.icon className="h-5 w-5" strokeWidth={1.75} />
                                 </div>
                                 <div>
-                                    <p className="font-semibold">{item.label}</p>
+                                    <p className="font-medium">{item.label}</p>
                                     <p className="text-muted-foreground">{item.value}</p>
                                 </div>
                             </div>
@@ -45,21 +45,21 @@ export function ContactPage() {
 
                     <form
                         onSubmit={handleSubmit}
-                        className="space-y-5 rounded-2xl border border-border/60 bg-card p-8 shadow-elevation-1"
+                        className="space-y-5 rounded-xl border border-border/60 bg-card p-8 shadow-elevation-1"
                     >
                         <FormField label="Name" htmlFor="contact-name" required>
-                            <Input id="contact-name" required className="rounded-xl" placeholder="Your name" />
+                            <Input id="contact-name" required placeholder="Your name" />
                         </FormField>
                         <FormField label="Email" htmlFor="contact-email" required>
-                            <Input id="contact-email" type="email" required className="rounded-xl" placeholder="you@email.com" />
+                            <Input id="contact-email" type="email" required placeholder="you@email.com" />
                         </FormField>
                         <FormField label="Subject" htmlFor="contact-subject" required>
-                            <Input id="contact-subject" required className="rounded-xl" placeholder="How can we help?" />
+                            <Input id="contact-subject" required placeholder="How can we help?" />
                         </FormField>
                         <FormField label="Message" htmlFor="contact-message" required>
-                            <Textarea id="contact-message" required rows={5} className="rounded-xl resize-none" placeholder="Your message..." />
+                            <Textarea id="contact-message" required rows={5} className="resize-none" placeholder="Your message..." />
                         </FormField>
-                        <Button type="submit" className="w-full rounded-xl">
+                        <Button type="submit" className="w-full">
                             Send message
                         </Button>
                     </form>

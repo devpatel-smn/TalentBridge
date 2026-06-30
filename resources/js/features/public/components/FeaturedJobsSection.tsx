@@ -61,7 +61,7 @@ function JobCard({ job, featured = false }: { job: Job; featured?: boolean }) {
     return (
         <Link
             to={PUBLIC_PATHS.job(job.uuid)}
-            className="card-premium group flex h-full min-w-0 flex-col rounded-xl border border-border/60 bg-card p-6 shadow-elevation-1 dark:border-border/80 dark:bg-card"
+            className="card-premium group flex h-full min-w-0 flex-col rounded-xl border border-border/60 bg-card p-6 shadow-elevation-1"
         >
             <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="text-[0.6875rem] font-medium uppercase tracking-wide">
@@ -109,15 +109,13 @@ export function FeaturedJobsSection() {
     }
 
     return (
-        <section className="landing-section-canvas overflow-x-clip py-8 md:py-12">
+        <section className="landing-section-canvas section-spacing overflow-x-clip">
             <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-xl">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-secondary">Opportunities</p>
-                        <h2 className="mt-3 font-display text-3xl font-medium tracking-tight md:text-4xl lg:text-[2.75rem]">
-                            Roles worth your attention
-                        </h2>
-                        <p className="mt-4 text-muted-foreground">
+                        <p className="section-eyebrow text-secondary">Opportunities</p>
+                        <h2 className="section-title-lg">Roles worth your attention</h2>
+                        <p className="section-description">
                             Curated positions from verified employers — updated daily.
                         </p>
                     </div>

@@ -49,7 +49,7 @@ export function CompaniesPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30">
+            <div className="border-b border-border/60 bg-muted/30 pt-header">
                 <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
                     <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Companies hiring now</h1>
                     <p className="mt-2 text-lg text-muted-foreground">

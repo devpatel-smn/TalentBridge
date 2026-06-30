@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LockKeyhole, Mail } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { getApiErrorMessage } from '@/lib/api-client';
 import { PUBLIC_PATHS } from '@/lib/paths';
 
 export function LoginPage() {
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const setUser = useAuthStore((s) => s.setUser);
@@ -57,7 +59,9 @@ export function LoginPage() {
     return (
         <div className="space-y-7 animate-fade-in">
             <div className="flex flex-col items-center gap-3 lg:hidden">
-                <AppLogo size="lg" showWordmark />
+                <Link to={PUBLIC_PATHS.home} className="transition-opacity duration-300 hover:opacity-85">
+                    <AppLogo size="lg" showWordmark />
+                </Link>
             </div>
             <div className="space-y-1.5 text-center lg:text-left">
                 <h2 className="text-2xl font-bold tracking-tight">Sign in</h2>
@@ -100,11 +104,19 @@ export function LoginPage() {
                         </span>
                         <Input
                             id="password"
-                            type="password"
-                            className="rounded-xl pl-10"
+                            type={showPassword ? 'text' : 'password'}
+                            className="rounded-xl pl-10 pr-10"
                             aria-invalid={!!errors.password}
                             {...register('password')}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                     </div>
                 </FormField>
                 <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={mutation.isPending}>
