@@ -55,17 +55,19 @@ class AuthService
             $user->assignRole($role);
 
             if ($role === Role::EMPLOYER) {
-                $this->createEmployerRecords($user, $data['company_name']);
+                $this->createEmployerRecords($user, $data['company_name'], $data);
             }
 
             if ($role === Role::JOB_SEEKER) {
                 JobSeekerProfile::query()->create([
                     'user_id' => $user->id,
+                    'location_city' => $data['city'] ?? null,
+                    'location_state' => $data['state'] ?? null,
+                    'location_country' => $data['country'] ?? null,
                 ]);
             }
 
             event(new Registered($user));
-            $this->emailVerification->sendVerificationNotification($user);
 
             return $user->load(['roles', 'jobSeekerProfile', 'employerUsers.company']);
         });
@@ -153,13 +155,20 @@ class AuthService
         ]);
     }
 
-    private function createEmployerRecords(User $user, string $companyName): void
+    private function createEmployerRecords(User $user, string $companyName, array $data = []): void
     {
         $slug = $this->generateUniqueCompanySlug($companyName);
+
+        $headquarters = collect([
+            $data['city'] ?? null,
+            $data['state'] ?? null,
+            $data['country'] ?? null,
+        ])->filter()->implode(', ');
 
         $company = Company::query()->create([
             'name' => $companyName,
             'slug' => $slug,
+            'headquarters' => $headquarters !== '' ? $headquarters : null,
             'created_by' => $user->id,
         ]);
 

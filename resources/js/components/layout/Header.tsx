@@ -1,14 +1,5 @@
 import { Link } from 'react-router-dom';
-import {
-    Bell,
-    ChevronDown,
-    LogOut,
-    Menu,
-    Moon,
-    Settings,
-    Sun,
-    UserRound,
-} from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Menu, Settings, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -21,7 +12,6 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { withIconDefaults } from '@/lib/icon-config';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
 import { authApi } from '@/features/auth/api/auth-api';
 import { getInitials } from '@/lib/utils';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
@@ -36,11 +26,6 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, showMenuButton, variant = 'seeker' }: HeaderProps) {
     const { user, clearAuth } = useAuth();
-    const { setTheme, resolvedTheme } = useTheme();
-
-    const toggleTheme = () => {
-        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-    };
 
     const logoutRedirect = variant === 'admin' ? '/admin/login' : '/login';
 
@@ -53,20 +38,6 @@ export function Header({ onMenuClick, showMenuButton, variant = 'seeker' }: Head
             )}
 
             <div className="ml-auto flex items-center gap-1.5">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleTheme}
-                    aria-label="Toggle theme"
-                    className="rounded-xl text-muted-foreground hover:bg-header-border/40 hover:text-foreground"
-                >
-                    {resolvedTheme === 'dark' ? (
-                        <Sun {...withIconDefaults({ className: 'h-[18px] w-[18px]' })} />
-                    ) : (
-                        <Moon {...withIconDefaults({ className: 'h-[18px] w-[18px]' })} />
-                    )}
-                </Button>
-
                 <NotificationBell />
 
                 <DropdownMenu>

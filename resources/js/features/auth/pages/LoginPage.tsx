@@ -81,7 +81,7 @@ export function LoginPage() {
                             id="email"
                             type="email"
                             placeholder="you@company.com"
-                            className="rounded-xl pl-10"
+                            className="input-leading-icon rounded-xl"
                             aria-invalid={!!errors.email}
                             {...register('email')}
                         />
@@ -105,7 +105,7 @@ export function LoginPage() {
                         <Input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            className="rounded-xl pl-10 pr-10"
+                            className="input-leading-icon input-trailing-icon rounded-xl"
                             aria-invalid={!!errors.password}
                             {...register('password')}
                         />

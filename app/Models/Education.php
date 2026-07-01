@@ -32,6 +32,8 @@ class Education extends Model
     /** @use HasFactory<EducationFactory> */
     use HasFactory, SoftDeletes;
 
+    protected $table = 'educations';
+
     protected $fillable = [
         'job_seeker_profile_id',
         'institution',

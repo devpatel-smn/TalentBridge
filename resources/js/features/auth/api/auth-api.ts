@@ -15,6 +15,9 @@ export interface RegisterPayload {
     password: string;
     password_confirmation: string;
     phone?: string;
+    city?: string;
+    state?: string;
+    country?: string;
     role: 'employer' | 'job_seeker';
     company_name?: string;
 }

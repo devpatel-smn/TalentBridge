@@ -50,7 +50,7 @@ export function ForgotPasswordPage() {
                             id="email"
                             type="email"
                             placeholder="you@company.com"
-                            className="rounded-xl pl-10"
+                            className="input-leading-icon rounded-xl"
                             aria-invalid={!!errors.email}
                             {...register('email')}
                         />

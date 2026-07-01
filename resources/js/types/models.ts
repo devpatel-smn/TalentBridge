@@ -95,6 +95,7 @@ export interface Company {
     headquarters?: string | null;
     verification_status: VerificationStatus;
     verified_at?: string | null;
+    open_jobs_count?: number;
     social_links?: Record<string, string> | null;
     settings?: Record<string, unknown> | null;
     created_at?: string;

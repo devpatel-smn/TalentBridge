@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { ArrowLeft, Building2, Globe, LockKeyhole, MapPin } from 'lucide-react';
-import { AuthPromptDialog } from '@/components/auth/AuthPromptDialog';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, Building2, Globe, MapPin } from 'lucide-react';
+import { PageMeta } from '@/components/common/PageMeta';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -10,73 +9,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { publicApi } from '@/features/public/api/public-api';
 import { jobsApi } from '@/features/jobs/api/jobs-api';
-import { useAuth } from '@/hooks/useAuth';
-import { setReturnUrl } from '@/lib/auth-redirect';
 import { PUBLIC_PATHS } from '@/lib/paths';
 import { formatDate, formatSalary, titleCase } from '@/lib/utils';
 
 export function CompanyDetailPage() {
     const { slug } = useParams<{ slug: string }>();
-    const location = useLocation();
-    const { isAuthenticated } = useAuth();
-    const [authOpen, setAuthOpen] = useState(false);
-
-    const returnTo = location.pathname;
 
     const { data: company, isLoading, isError, refetch } = useQuery({
         queryKey: ['companies', slug],
         queryFn: () => publicApi.getCompany(slug!),
-        enabled: !!slug && isAuthenticated,
+        enabled: !!slug,
     });
 
     const { data: jobsData } = useQuery({
         queryKey: ['jobs', 'company', slug],
         queryFn: () => jobsApi.list({ per_page: 20, filter: { company_slug: slug } }),
-        enabled: !!slug && isAuthenticated,
+        enabled: !!slug,
     });
 
     const jobs = jobsData?.data ?? [];
-
-    useEffect(() => {
-        if (!isAuthenticated) {
-            setReturnUrl(returnTo);
-            setAuthOpen(true);
-        }
-    }, [isAuthenticated, returnTo]);
-
-    if (!isAuthenticated) {
-        return (
-            <div className="mx-auto max-w-2xl px-4 py-20 md:py-28">
-                <div className="animate-scale-in text-center">
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <Building2 className="h-8 w-8" />
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight">Company profiles are for members</h1>
-                    <p className="mt-4 text-lg text-muted-foreground">
-                        Please sign in to continue exploring TalentBridge and view full company details.
-                    </p>
-                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                        <Button size="lg" className="rounded-xl" onClick={() => setAuthOpen(true)}>
-                            <LockKeyhole className="mr-2 h-4 w-4" />
-                            Sign in to continue
-                        </Button>
-                        <Button size="lg" variant="outline" asChild className="rounded-xl">
-                            <Link to={PUBLIC_PATHS.companies}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Browse companies
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-                <AuthPromptDialog
-                    open={authOpen}
-                    onOpenChange={setAuthOpen}
-                    returnTo={returnTo}
-                    description="Please sign in to continue exploring TalentBridge."
-                />
-            </div>
-        );
-    }
 
     if (isLoading) return <LoadingSpinner label="Loading company..." />;
 
@@ -90,21 +41,22 @@ export function CompanyDetailPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30 pt-header">
-                <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
-                    <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2 rounded-xl">
+            <PageMeta title={company.name} description={company.description ?? `View open roles and company details for ${company.name} on TalentBridge.`} />
+            <div className="page-hero">
+                <div className="page-hero-inner">
+                    <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2 rounded-xl">
                         <Link to={PUBLIC_PATHS.companies}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             All companies
                         </Link>
                     </Button>
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                            <Building2 className="h-9 w-9" />
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-gold/8 text-gold">
+                            <Building2 className="h-9 w-9" strokeWidth={1.75} />
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-3">
-                                <h1 className="text-3xl font-bold tracking-tight">{company.name}</h1>
+                                <h1 className="page-hero-title">{company.name}</h1>
                                 {company.verification_status === 'approved' && (
                                     <Badge className="bg-success/10 text-success">Verified</Badge>
                                 )}

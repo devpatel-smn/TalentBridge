@@ -180,7 +180,7 @@ export function EmployerJobsPage() {
             />
 
             {company && !isCompanyVerified && (
-                <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
+                <Card className="border-amber-200 bg-amber-50">
                     <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-start gap-3">
                             <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />

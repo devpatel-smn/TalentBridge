@@ -1,14 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Briefcase, Building2, MapPin } from 'lucide-react';
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState, ErrorState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { jobsApi } from '@/features/jobs/api/jobs-api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { APP_NAME, DEFAULT_PAGE_SIZE } from '@/lib/constants';
@@ -22,7 +24,7 @@ function PublicJobCard({ job }: { job: Job }) {
     const location = [job.location_city, job.location_state, job.location_country].filter(Boolean).join(', ');
 
     return (
-        <Card className="group flex h-full flex-col transition-all hover:border-primary/30 hover:shadow-lg">
+        <Card className="card-glow-hover group flex h-full flex-col rounded-2xl border-border/60">
             <CardHeader className="pb-3">
                 <CardTitle className="line-clamp-2 text-lg leading-snug group-hover:text-primary">
                     <Link to={`/jobs/${job.uuid}`}>{job.title}</Link>
@@ -93,6 +95,8 @@ export function JobListPage() {
                 search: debouncedSearch || undefined,
                 filter: filters,
             }),
+        staleTime: 2 * 60 * 1000,
+        placeholderData: keepPreviousData,
     });
 
     const jobs = data?.data ?? [];
@@ -100,19 +104,18 @@ export function JobListPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background pt-header">
-                <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
-                    <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-                        Find your next opportunity
-                    </h1>
-                    <p className="mt-2 max-w-2xl text-lg text-muted-foreground">
-                        Browse open positions on {APP_NAME}. No account required to explore.
-                    </p>
-                </div>
-            </div>
+            <PageMeta
+                title="Jobs"
+                description={`Browse open positions on ${APP_NAME}. No account required to explore.`}
+            />
+            <PageHero
+                eyebrow="Opportunities"
+                title="Find your next opportunity"
+                description={`Browse open positions on ${APP_NAME}. No account required to explore.`}
+            />
 
-            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-6 lg:px-8">
-                    <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm lg:flex-row lg:items-center">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-6 md:py-10 lg:px-8">
+                    <div className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-elevation-1">
                         <SearchInput
                             value={search}
                             onChange={(v) => {
@@ -120,74 +123,79 @@ export function JobListPage() {
                                 setPage(1);
                             }}
                             placeholder="Search jobs..."
-                            className="flex-1"
                         />
-                        <Select
-                            value={categoryId}
-                            onValueChange={(v) => {
-                                setCategoryId(v);
-                                setPage(1);
-                            }}
-                        >
-                            <SelectTrigger className="w-full lg:w-52">
-                                <SelectValue placeholder="Field / Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All categories</SelectItem>
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={String(category.id)}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select
-                            value={workMode}
-                            onValueChange={(v) => {
-                                setWorkMode(v);
-                                setPage(1);
-                            }}
-                        >
-                            <SelectTrigger className="w-full lg:w-44">
-                                <SelectValue placeholder="Work mode" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All work modes</SelectItem>
-                                {WORK_MODES.map((mode) => (
-                                    <SelectItem key={mode} value={mode}>
-                                        {titleCase(mode)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select
-                            value={employmentType}
-                            onValueChange={(v) => {
-                                setEmploymentType(v);
-                                setPage(1);
-                            }}
-                        >
-                            <SelectTrigger className="w-full lg:w-48">
-                                <SelectValue placeholder="Employment type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All types</SelectItem>
-                                {EMPLOYMENT_TYPES.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                        {titleCase(type)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <Select
+                                value={categoryId}
+                                onValueChange={(v) => {
+                                    setCategoryId(v);
+                                    setPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All categories</SelectItem>
+                                    {categories.map((category) => (
+                                        <SelectItem key={category.id} value={String(category.id)}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={workMode}
+                                onValueChange={(v) => {
+                                    setWorkMode(v);
+                                    setPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Work mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All work modes</SelectItem>
+                                    {WORK_MODES.map((mode) => (
+                                        <SelectItem key={mode} value={mode}>
+                                            {titleCase(mode)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={employmentType}
+                                onValueChange={(v) => {
+                                    setEmploymentType(v);
+                                    setPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Employment type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All types</SelectItem>
+                                    {EMPLOYMENT_TYPES.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {titleCase(type)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     {isLoading ? (
-                        <LoadingSpinner label="Loading jobs..." />
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            {Array.from({ length: DEFAULT_PAGE_SIZE }).map((_, i) => (
+                                <Skeleton key={i} className="h-56 rounded-2xl" />
+                            ))}
+                        </div>
                     ) : isError ? (
                         <ErrorState title="Unable to load jobs" onRetry={() => refetch()} />
                     ) : jobs.length === 0 ? (
                         <EmptyState
-                            icon={<Briefcase className="h-6 w-6 text-muted-foreground" />}
+                            icon={Briefcase}
                             title="No jobs available"
                             description="Check back soon for new opportunities, or adjust your search filters."
                         />

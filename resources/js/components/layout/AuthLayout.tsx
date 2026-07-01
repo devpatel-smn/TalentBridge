@@ -15,7 +15,7 @@ export function AuthLayout() {
     return (
         <div className="relative flex min-h-screen">
             <div className="relative hidden w-[42%] flex-col justify-between overflow-hidden p-10 text-white xl:w-[40%] xl:p-12 lg:flex surface-navy grain-overlay">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(29_84%_61%_/_0.18)_0%,_transparent_60%)]" />
+                <div className="absolute inset-0 bg-gold/8" />
                 <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
                 <div className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
 

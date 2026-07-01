@@ -13,7 +13,17 @@ export function GuestRoute() {
         return <Outlet />;
     }
 
-    if (isAuthenticated && role && !user?.email_verified_at && location.pathname === '/verify-email') {
+    if (isAuthenticated && role && !user?.email_verified_at) {
+        if (location.pathname !== '/verify-email') {
+            return (
+                <Navigate
+                    to="/verify-email"
+                    replace
+                    state={stateFrom ? { from: stateFrom } : undefined}
+                />
+            );
+        }
+
         return <Outlet />;
     }
 

@@ -1,13 +1,12 @@
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
+
 export function PrivacyPage() {
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30 pt-header">
-                <div className="mx-auto max-w-3xl px-4 py-16 md:px-6">
-                    <h1 className="text-4xl font-bold tracking-tight">Privacy Policy</h1>
-                    <p className="mt-4 text-muted-foreground">Last updated: June 2026</p>
-                </div>
-            </div>
-            <article className="prose prose-neutral dark:prose-invert mx-auto max-w-3xl px-4 py-16 md:px-6">
+            <PageMeta title="Privacy Policy" description="How TalentBridge collects, uses, and protects your personal data." />
+            <PageHero title="Privacy Policy" description="Last updated: June 2026" />
+            <article className="prose-readable mx-auto max-w-3xl px-4 py-12 md:px-6 md:py-16">
                 <section className="space-y-4 text-muted-foreground">
                     <h2 className="text-xl font-semibold text-foreground">1. Information we collect</h2>
                     <p>

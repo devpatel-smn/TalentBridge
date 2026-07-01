@@ -21,6 +21,10 @@ class RegisterRequest extends FormRequest
                 'email' => strtolower(trim($this->string('email')->toString())),
             ]);
         }
+
+        if ($this->has('phone') && trim($this->string('phone')->toString()) === '') {
+            $this->merge(['phone' => null]);
+        }
     }
 
     /**
@@ -40,7 +44,10 @@ class RegisterRequest extends FormRequest
                 'confirmed',
                 Password::min($minLength)->mixedCase()->numbers()->symbols(),
             ],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\d{7,15}$/'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'state' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
             'role' => ['required', 'string', Rule::in(Role::registrable())],
             'company_name' => [
                 'required_if:role,'.Role::EMPLOYER,

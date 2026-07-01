@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Menu, Moon, Sparkles, Sun, UserRound, X } from 'lucide-react';
+import { Bell, UserRound } from 'lucide-react';
 import { AppLogo } from '@/components/common/AppLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
 import { DASHBOARD_ROUTES, ROLES } from '@/lib/constants';
 import { PUBLIC_PATHS, JOB_SEEKER_PATHS } from '@/lib/paths';
 import { cn } from '@/lib/utils';
@@ -37,10 +36,23 @@ function luminance(r: number, g: number, b: number) {
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
+function getSectionTone(element: Element): 'dark' | 'light' | null {
+    const section = element.closest('[data-section-tone]');
+    if (section) {
+        const tone = section.getAttribute('data-section-tone');
+        if (tone === 'dark' || tone === 'light') return tone;
+    }
+    return null;
+}
+
 function getEffectiveLuminance(element: Element): number | null {
     let current: Element | null = element;
 
     while (current && current !== document.documentElement) {
+        const tone = getSectionTone(current);
+        if (tone === 'dark') return 0.1;
+        if (tone === 'light') return 0.95;
+
         const { backgroundColor } = window.getComputedStyle(current);
         const rgb = parseRgb(backgroundColor);
         if (rgb && rgb.a > 0.12) {
@@ -78,90 +90,107 @@ function isDarkBehindHeader(headerRoot: HTMLElement | null) {
     return false;
 }
 
-function PublicNavLink({
-    to,
-    label,
-    active,
-    lightText,
-}: {
-    to: string;
-    label: string;
-    active: boolean;
-    lightText: boolean;
-}) {
+function PublicNavLink({ to, label, active }: { to: string; label: string; active: boolean }) {
     return (
         <Link
             to={to}
-            className={cn(
-                'px-4 py-2 text-sm font-light transition-colors duration-300',
-                lightText
-                    ? active
-                        ? 'font-medium text-white'
-                        : 'text-white/70 hover:text-white'
-                    : active
-                      ? 'font-medium text-foreground'
-                      : 'text-foreground/70 hover:text-foreground',
-            )}
+            data-active={active}
+            className="nav-link-premium text-muted-foreground hover:text-foreground data-[active=true]:text-foreground"
         >
-            {label}
+            <span className="nav-link-label">{label}</span>
+            <span className="nav-link-underline" aria-hidden="true" />
         </Link>
     );
 }
 
-function HeaderCta({ href, label, accent }: { href: string; label: string; accent: string }) {
+function MenuToggle({
+    open,
+    onClick,
+    className,
+}: {
+    open: boolean;
+    onClick: () => void;
+    className?: string;
+}) {
     return (
-        <Link
-            to={href}
-            className="btn-magnetic inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-medium text-navy-foreground transition-colors hover:bg-navy/90 dark:bg-gold dark:text-gold-foreground dark:hover:bg-gold/90"
+        <button
+            type="button"
+            className={cn(
+                'relative flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-foreground transition-colors hover:bg-foreground/5 lg:hidden',
+                className,
+            )}
+            onClick={onClick}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
         >
-            <Sparkles className="h-4 w-4 shrink-0 text-white" aria-hidden />
-            <span>
-                {label} <span className="text-gold">{accent}</span>
+            <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
+            <span className="relative block h-4 w-5" aria-hidden="true">
+                <span
+                    className={cn(
+                        'absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                        open ? 'top-[7px] rotate-45' : 'top-0',
+                    )}
+                />
+                <span
+                    className={cn(
+                        'absolute left-0 top-[7px] block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                        open ? 'opacity-0 scale-x-0' : 'opacity-100',
+                    )}
+                />
+                <span
+                    className={cn(
+                        'absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                        open ? 'top-[7px] -rotate-45' : 'top-[14px]',
+                    )}
+                />
             </span>
-        </Link>
+        </button>
     );
 }
+
+type HeaderMode = 'transparent' | 'glass' | 'solid';
 
 export function PublicHeader() {
     const location = useLocation();
     const { isAuthenticated, role } = useAuth();
-    const { setTheme, resolvedTheme } = useTheme();
     const headerRootRef = useRef<HTMLDivElement>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [lightText, setLightText] = useState(false);
+    const [headerMode, setHeaderMode] = useState<HeaderMode>('transparent');
+    const rafRef = useRef<number | null>(null);
 
     const dashboardHref = role ? DASHBOARD_ROUTES[role] : PUBLIC_PATHS.login;
     const profileHref = role === ROLES.JOB_SEEKER ? JOB_SEEKER_PATHS.profile : '/settings/profile';
-    const showBlur = scrolled || mobileOpen;
 
     const updateHeaderState = useCallback(() => {
-        const isScrolled = window.scrollY > 8;
-        setScrolled(isScrolled);
+        const isScrolled = window.scrollY > 12;
+        const darkBehind = isDarkBehindHeader(headerRootRef.current);
 
-        if (!isScrolled) {
-            setLightText(false);
-            return;
+        if (mobileOpen || darkBehind) {
+            setHeaderMode('solid');
+        } else if (isScrolled) {
+            setHeaderMode('glass');
+        } else {
+            setHeaderMode('transparent');
         }
-
-        const darkBehind =
-            resolvedTheme === 'dark' || isDarkBehindHeader(headerRootRef.current);
-        setLightText(darkBehind);
-    }, [resolvedTheme]);
+    }, [mobileOpen]);
 
     useEffect(() => {
+        const onScroll = () => {
+            if (rafRef.current !== null) return;
+            rafRef.current = requestAnimationFrame(() => {
+                updateHeaderState();
+                rafRef.current = null;
+            });
+        };
+
         updateHeaderState();
-        window.addEventListener('scroll', updateHeaderState, { passive: true });
+        window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', updateHeaderState);
 
-        const raf = requestAnimationFrame(updateHeaderState);
-        const timer = window.setTimeout(updateHeaderState, 120);
-
         return () => {
-            window.removeEventListener('scroll', updateHeaderState);
+            window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', updateHeaderState);
-            cancelAnimationFrame(raf);
-            window.clearTimeout(timer);
+            if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
         };
     }, [updateHeaderState, location.pathname]);
 
@@ -169,35 +198,32 @@ export function PublicHeader() {
         setMobileOpen(false);
     }, [location.pathname]);
 
-    const ghostClass = lightText
-        ? 'text-white/70 hover:bg-white/10 hover:text-white'
-        : 'text-foreground/70 hover:bg-foreground/5 hover:text-foreground';
+    useEffect(() => {
+        document.body.style.overflow = mobileOpen ? 'hidden' : '';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [mobileOpen]);
+
+    const ghostClass = 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground min-h-[44px] min-w-[44px]';
 
     return (
         <div ref={headerRootRef} className="fixed inset-x-0 top-0 z-50 w-full">
-            <div
-                aria-hidden
-                className={cn(
-                    'pointer-events-none absolute inset-0 bg-transparent transition-[opacity,backdrop-filter] duration-300 ease-out',
-                    showBlur
-                        ? 'opacity-100 backdrop-blur-[20px] backdrop-saturate-150'
-                        : 'opacity-0 backdrop-blur-none',
-                )}
-            />
-
             <header
                 className={cn(
-                    'relative bg-transparent transition-[border-color] duration-300',
-                    showBlur && (lightText ? 'border-b border-white/10' : 'border-b border-foreground/8'),
+                    'relative',
+                    headerMode === 'transparent' && 'border-b border-transparent bg-transparent',
+                    headerMode === 'glass' && 'header-glass-scrolled',
+                    headerMode === 'solid' && 'header-glass-solid',
                 )}
             >
-                <div className="mx-auto grid h-[4.5rem] max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6 lg:px-8">
+                <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-3 px-4 md:gap-4 md:px-6 lg:px-8">
                     <Link
                         to={PUBLIC_PATHS.home}
                         className="relative z-10 shrink-0 transition-opacity duration-300 hover:opacity-85"
                         onClick={() => setMobileOpen(false)}
                     >
-                        <AppLogo size="sm" showWordmark variant={lightText ? 'light' : 'default'} />
+                        <AppLogo size="sm" showWordmark variant="default" />
                     </Link>
 
                     <nav className="relative z-10 hidden items-center justify-center lg:flex" aria-label="Main navigation">
@@ -207,149 +233,95 @@ export function PublicHeader() {
                                 to={link.href}
                                 label={link.label}
                                 active={isActive(location.pathname, link.href, link.exact)}
-                                lightText={lightText}
                             />
                         ))}
                     </nav>
 
-                    <div className="relative z-10 flex items-center justify-end gap-1.5">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                            aria-label="Toggle theme"
-                            className={cn('rounded-full', ghostClass)}
-                        >
-                            {resolvedTheme === 'dark' ? (
-                                <Sun className="h-[18px] w-[18px]" />
-                            ) : (
-                                <Moon className="h-[18px] w-[18px]" />
-                            )}
-                        </Button>
-
+                    <div className="relative z-10 flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
                         {isAuthenticated ? (
                             <>
                                 <Button
                                     asChild
                                     variant="ghost"
                                     size="icon"
-                                    className={cn('hidden rounded-full sm:inline-flex', ghostClass)}
+                                    className={cn('hidden rounded-xl sm:inline-flex', ghostClass)}
                                 >
                                     <Link to="/notifications" aria-label="Notifications">
-                                        <Bell className="h-4 w-4" />
+                                        <Bell className="h-4 w-4" strokeWidth={1.75} />
                                     </Link>
                                 </Button>
-                                <Button asChild variant="ghost" className={cn('hidden rounded-full md:inline-flex', ghostClass)}>
+                                <Button asChild variant="ghost" className={cn('hidden rounded-xl md:inline-flex', ghostClass)}>
                                     <Link to={profileHref}>
-                                        <UserRound className="mr-1.5 h-4 w-4" />
+                                        <UserRound className="mr-1.5 h-4 w-4" strokeWidth={1.75} />
                                         Profile
                                     </Link>
                                 </Button>
-                                <div className="hidden sm:block">
-                                    <HeaderCta href={dashboardHref} label="Go to" accent="Dashboard" />
-                                </div>
+                                <Button asChild variant="gold" size="default" className="hidden sm:inline-flex">
+                                    <Link to={dashboardHref}>Dashboard</Link>
+                                </Button>
                             </>
                         ) : (
                             <>
-                                <Button asChild variant="ghost" className={cn('hidden rounded-full sm:inline-flex', ghostClass)}>
+                                <Button asChild variant="ghost" className={cn('hidden rounded-xl sm:inline-flex', ghostClass)}>
                                     <Link to={PUBLIC_PATHS.login}>Login</Link>
                                 </Button>
-                                <div className="hidden sm:block">
-                                    <HeaderCta href={PUBLIC_PATHS.register} label="Get" accent="Started" />
-                                </div>
+                                <Button asChild variant="gold" size="default" className="hidden sm:inline-flex">
+                                    <Link to={PUBLIC_PATHS.register}>Get Started</Link>
+                                </Button>
                             </>
                         )}
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className={cn('rounded-full lg:hidden', lightText ? 'text-white hover:bg-white/10' : 'text-foreground hover:bg-foreground/5')}
-                            onClick={() => setMobileOpen((o) => !o)}
-                            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-                            aria-expanded={mobileOpen}
-                        >
-                            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        </Button>
+                        <MenuToggle open={mobileOpen} onClick={() => setMobileOpen((o) => !o)} />
                     </div>
                 </div>
 
                 <div
                     className={cn(
-                        'relative z-10 overflow-hidden bg-transparent transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden',
-                        mobileOpen ? 'max-h-[32rem] opacity-100' : 'max-h-0 opacity-0',
+                        'relative z-10 overflow-hidden transition-[max-height,opacity] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:hidden',
+                        mobileOpen ? 'max-h-[36rem] border-t border-border/80 opacity-100' : 'max-h-0 opacity-0',
                     )}
+                    aria-hidden={!mobileOpen}
                 >
-                    <nav className="space-y-0.5 px-4 py-4" aria-label="Mobile navigation">
+                    <nav className="space-y-1 px-4 py-4" aria-label="Mobile navigation">
                         {navLinks.map((link) => {
                             const active = isActive(location.pathname, link.href, link.exact);
                             return (
                                 <Link
                                     key={link.href}
                                     to={link.href}
+                                    tabIndex={mobileOpen ? 0 : -1}
                                     className={cn(
-                                        'block rounded-lg px-4 py-3 text-sm font-light transition-colors duration-300',
-                                        lightText
-                                            ? active
-                                                ? 'bg-white/12 font-medium text-white'
-                                                : 'text-white/70 hover:bg-white/8 hover:text-white'
-                                            : active
-                                              ? 'bg-foreground/8 font-medium text-foreground'
-                                              : 'text-foreground/70 hover:bg-foreground/5 hover:text-foreground',
+                                        'flex min-h-[44px] items-center rounded-xl px-4 py-3 text-sm font-medium transition-colors duration-300',
+                                        active
+                                            ? 'bg-muted font-semibold text-foreground'
+                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                                     )}
                                 >
                                     {link.label}
                                 </Link>
                             );
                         })}
-                        <div
-                            className={cn(
-                                'mt-4 flex flex-col gap-2 border-t pt-4',
-                                lightText ? 'border-white/10' : 'border-foreground/8',
-                            )}
-                        >
+                        <div className="mt-3 flex flex-col gap-2 border-t border-border pt-4">
                             {isAuthenticated ? (
                                 <>
-                                    <HeaderCta href={dashboardHref} label="Go to" accent="Dashboard" />
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        className={cn(
-                                            'rounded-full',
-                                            lightText
-                                                ? 'border-white/20 text-white hover:bg-white/10'
-                                                : 'border-foreground/15 text-foreground',
-                                        )}
-                                    >
+                                    <Button asChild variant="gold" className="min-h-[44px]">
+                                        <Link to={dashboardHref}>Dashboard</Link>
+                                    </Button>
+                                    <Button asChild variant="outline" className="min-h-[44px] rounded-xl">
                                         <Link to="/notifications">Notifications</Link>
                                     </Button>
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        className={cn(
-                                            'rounded-full',
-                                            lightText
-                                                ? 'border-white/20 text-white hover:bg-white/10'
-                                                : 'border-foreground/15 text-foreground',
-                                        )}
-                                    >
+                                    <Button asChild variant="outline" className="min-h-[44px] rounded-xl">
                                         <Link to={profileHref}>Profile</Link>
                                     </Button>
                                 </>
                             ) : (
                                 <>
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        className={cn(
-                                            'rounded-full',
-                                            lightText
-                                                ? 'border-white/20 text-white hover:bg-white/10'
-                                                : 'border-foreground/15 text-foreground',
-                                        )}
-                                    >
+                                    <Button asChild variant="outline" className="min-h-[44px] rounded-xl">
                                         <Link to={PUBLIC_PATHS.login}>Login</Link>
                                     </Button>
-                                    <HeaderCta href={PUBLIC_PATHS.register} label="Get" accent="Started" />
+                                    <Button asChild variant="gold" className="min-h-[44px]">
+                                        <Link to={PUBLIC_PATHS.register}>Get Started</Link>
+                                    </Button>
                                 </>
                             )}
                         </div>

@@ -1,30 +1,31 @@
-import { Link } from 'react-router-dom';
 import { Target, Users, Zap } from 'lucide-react';
 import { IconBox } from '@/components/common/IconBox';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
 import { CTASection } from '@/features/public/components/CTASection';
-import { PUBLIC_PATHS } from '@/lib/paths';
+import { IMAGES } from '@/lib/images';
 
 export function AboutPage() {
     return (
         <>
-            <div className="page-hero">
-                <div className="page-hero-inner">
-                    <h1 className="page-hero-title">About TalentBridge</h1>
-                    <p className="page-hero-description">
-                        We&apos;re building the recruitment platform we always wished existed — beautiful, fast, and
-                        designed for both candidates and hiring teams.
-                    </p>
-                </div>
-            </div>
+            <PageMeta
+                title="About"
+                description="Learn how TalentBridge connects exceptional talent with forward-thinking employers through a premium hiring experience."
+            />
+            <PageHero
+                eyebrow="Our story"
+                title="About TalentBridge"
+                description="We're building the recruitment platform we always wished existed — beautiful, fast, and designed for both candidates and hiring teams."
+            />
 
-            <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 lg:px-8">
-                <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16 lg:px-8">
+                <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
                     <div className="aspect-video overflow-hidden rounded-2xl border border-border/60 shadow-elevation-2">
-                        <img
-                            src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80"
-                            alt="Professional team meeting"
-                            className="h-full w-full object-cover"
-                            loading="lazy"
+                        <OptimizedImage
+                            src={IMAGES.about.teamMeeting}
+                            alt="Professional team meeting in a modern workplace"
+                            className="h-full"
                         />
                     </div>
                     <div className="space-y-6">

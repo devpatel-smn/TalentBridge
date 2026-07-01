@@ -1,5 +1,4 @@
 export const APP_NAME = 'TalentBridge';
-export const THEME_STORAGE_KEY = 'talentbridge-theme';
 export const COMPANY_ID_STORAGE_KEY = 'talentbridge-company-id';
 
 export const API_BASE_URL = '/api/v1';

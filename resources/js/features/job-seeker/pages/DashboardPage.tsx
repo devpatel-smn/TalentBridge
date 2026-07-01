@@ -18,15 +18,9 @@ import { ErrorState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { jobSeekerApi } from '@/features/job-seeker/api/job-seeker-api';
-import { UpcomingInterviewsWidget } from '@/features/interviews/components/UpcomingInterviewsWidget';
 import { useAuth } from '@/hooks/useAuth';
 import { JOB_SEEKER_PATHS } from '@/lib/paths';
-import { StatusBadge } from '@/components/common/StatusBadge';
-import { Badge } from '@/components/ui/badge';
-import { apiClient } from '@/lib/api-client';
-import { cn, formatDate } from '@/lib/utils';
-import type { ApiResponse } from '@/types/api';
-import type { Job, JobApplication } from '@/types/models';
+import { cn } from '@/lib/utils';
 
 interface DashboardData {
     profile_completion: number;
@@ -53,23 +47,6 @@ export function JobSeekerDashboardPage() {
         queryFn: async () => (await jobSeekerApi.dashboard()) as unknown as DashboardData,
     });
 
-    const { data: recentApps } = useQuery({
-        queryKey: ['job-seeker', 'applications', 'recent'],
-        queryFn: () => jobSeekerApi.applications.list({ per_page: 4 }),
-    });
-
-    const { data: recommendations = [] } = useQuery({
-        queryKey: ['job-seeker', 'recommendations', 'dashboard'],
-        queryFn: async () => {
-            try {
-                const { data: res } = await apiClient.get<ApiResponse<{ job?: Job; score?: number }[]>>('/job-seeker/recommendations');
-                return res.data ?? [];
-            } catch {
-                return [];
-            }
-        },
-    });
-
     if (isLoading) return <LoadingSpinner label="Loading your dashboard..." />;
 
     if (isError || !data) {
@@ -78,7 +55,6 @@ export function JobSeekerDashboardPage() {
 
     const completion = data.profile_completion ?? user?.job_seeker_profile?.profile_completion ?? 0;
     const resumeCompletion = data.resumes.total > 0 ? 100 : 0;
-    const applications = (recentApps?.data ?? []) as JobApplication[];
 
     return (
         <div className="space-y-8">
@@ -194,78 +170,6 @@ export function JobSeekerDashboardPage() {
                     icon={Video}
                     iconVariant="warning"
                 />
-            </div>
-
-            <UpcomingInterviewsWidget
-                listHref={JOB_SEEKER_PATHS.interviews}
-                queryKey={['job-seeker', 'interviews', 'upcoming-widget']}
-                queryFn={() => jobSeekerApi.interviews.upcoming({ per_page: 5 })}
-            />
-
-            <div className="grid gap-6 lg:grid-cols-2">
-                <PageSection
-                    title="Recommended for you"
-                    description="Jobs matched to your profile"
-                    actions={
-                        <Button variant="ghost" size="sm" asChild className="rounded-xl">
-                            <Link to={JOB_SEEKER_PATHS.recommendations}>View all</Link>
-                        </Button>
-                    }
-                >
-                    {recommendations.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Complete your profile to unlock personalized recommendations.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {recommendations.slice(0, 3).map((rec, i) => {
-                                const job = rec.job;
-                                if (!job) return null;
-                                return (
-                                    <Link key={job.uuid ?? i} to={JOB_SEEKER_PATHS.job(job.uuid)}>
-                                        <Card className="transition-all hover:border-primary/25 hover:shadow-elevation-1">
-                                            <CardContent className="flex items-center justify-between gap-3 p-4">
-                                                <div className="min-w-0">
-                                                    <p className="truncate font-medium">{job.title}</p>
-                                                    <p className="truncate text-sm text-muted-foreground">{job.company?.name}</p>
-                                                </div>
-                                                {rec.score != null && (
-                                                    <Badge variant="secondary">{Math.round(rec.score)}% match</Badge>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    )}
-                </PageSection>
-
-                <PageSection
-                    title="Recent applications"
-                    description="Latest activity on your applications"
-                    actions={
-                        <Button variant="ghost" size="sm" asChild className="rounded-xl">
-                            <Link to={JOB_SEEKER_PATHS.applications}>View all</Link>
-                        </Button>
-                    }
-                >
-                    {applications.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No applications yet. Start exploring open roles.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {applications.map((app) => (
-                                <Card key={app.uuid} className="transition-all hover:shadow-elevation-1">
-                                    <CardContent className="flex items-center justify-between gap-3 p-4">
-                                        <div className="min-w-0">
-                                            <p className="truncate font-medium">{app.job?.title ?? 'Application'}</p>
-                                            <p className="text-xs text-muted-foreground">Applied {formatDate(app.applied_at)}</p>
-                                        </div>
-                                        <StatusBadge status={app.status} />
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </PageSection>
             </div>
 
             <PageSection title="Quick navigation" description="Jump to the tools you need most">

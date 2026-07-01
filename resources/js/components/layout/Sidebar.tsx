@@ -75,7 +75,7 @@ export function Sidebar({ items, collapsed, subtitle, onNavigate }: SidebarProps
                                 className={cn(
                                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all duration-300',
                                     isActive
-                                        ? 'bg-navy text-cream dark:bg-gold/15 dark:text-gold'
+                                        ? 'bg-navy text-cream'
                                         : 'bg-sidebar-accent/40 text-muted-foreground group-hover:bg-sidebar-accent group-hover:text-foreground',
                                 )}
                             >

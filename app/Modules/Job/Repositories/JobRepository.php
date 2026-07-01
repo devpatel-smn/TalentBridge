@@ -13,6 +13,34 @@ class JobRepository implements JobRepositoryInterface
 {
     use AppliesJobFilters;
 
+    /** @var list<string> */
+    private const PUBLIC_LIST_COLUMNS = [
+        'id',
+        'uuid',
+        'company_id',
+        'title',
+        'slug',
+        'employment_type',
+        'work_mode',
+        'experience_level',
+        'salary_min',
+        'salary_max',
+        'salary_currency',
+        'salary_period',
+        'is_salary_visible',
+        'location_city',
+        'location_state',
+        'location_country',
+        'vacancies',
+        'status',
+        'is_featured',
+        'published_at',
+        'application_deadline',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
     private const PUBLIC_SORTABLE = [
         'published_at', 'created_at', 'title', 'salary_min', 'salary_max', 'views_count',
     ];
@@ -24,8 +52,19 @@ class JobRepository implements JobRepositoryInterface
     public function paginatePublic(JobListQueryParams $params): LengthAwarePaginator
     {
         $query = Job::query()
+            ->select(self::PUBLIC_LIST_COLUMNS)
             ->active()
-            ->with(['company.logo', 'category', 'skills']);
+            ->with([
+                'company' => fn ($builder) => $builder->select(
+                    'id',
+                    'uuid',
+                    'name',
+                    'slug',
+                    'industry',
+                    'headquarters',
+                    'verification_status',
+                ),
+            ]);
 
         $this->applyJobFilters($query, $params, self::PUBLIC_SORTABLE, 'published_at');
 
@@ -35,9 +74,20 @@ class JobRepository implements JobRepositoryInterface
     public function featured(int $limit = 10): Collection
     {
         return Job::query()
+            ->select(self::PUBLIC_LIST_COLUMNS)
             ->active()
             ->where('is_featured', true)
-            ->with(['company.logo', 'category', 'skills'])
+            ->with([
+                'company' => fn ($builder) => $builder->select(
+                    'id',
+                    'uuid',
+                    'name',
+                    'slug',
+                    'industry',
+                    'headquarters',
+                    'verification_status',
+                ),
+            ])
             ->orderByDesc('published_at')
             ->limit($limit)
             ->get();

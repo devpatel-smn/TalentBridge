@@ -36,6 +36,7 @@ class ListJobsRequest extends FormRequest
             'filter.salary_min' => ['sometimes', 'numeric', 'min:0'],
             'filter.salary_max' => ['sometimes', 'numeric', 'min:0'],
             'filter.is_featured' => ['sometimes', 'boolean'],
+            'filter.company_slug' => ['sometimes', 'string', 'max:255'],
             'include' => ['sometimes', 'string', 'max:255'],
         ];
     }

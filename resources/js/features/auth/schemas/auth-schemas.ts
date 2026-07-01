@@ -19,7 +19,12 @@ export const registerSchema = z
             .regex(/[0-9]/, 'Must contain a number')
             .regex(/[^A-Za-z0-9]/, 'Must contain a symbol'),
         password_confirmation: z.string(),
-        phone: z.string().max(20).optional(),
+        phone: z
+            .string()
+            .optional()
+            .refine((value) => !value || /^\d{7,15}$/.test(value), {
+                message: 'Phone number must be 7–15 digits',
+            }),
         city: z.string().max(100).optional(),
         state: z.string().max(100).optional(),
         zip: z.string().max(20).optional(),

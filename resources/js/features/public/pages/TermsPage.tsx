@@ -1,13 +1,12 @@
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
+
 export function TermsPage() {
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30 pt-header">
-                <div className="mx-auto max-w-3xl px-4 py-16 md:px-6">
-                    <h1 className="text-4xl font-bold tracking-tight">Terms of Service</h1>
-                    <p className="mt-4 text-muted-foreground">Last updated: June 2026</p>
-                </div>
-            </div>
-            <article className="mx-auto max-w-3xl space-y-8 px-4 py-16 text-muted-foreground md:px-6">
+            <PageMeta title="Terms of Service" description="Terms and conditions for using the TalentBridge platform." />
+            <PageHero title="Terms of Service" description="Last updated: June 2026" />
+            <article className="prose-readable mx-auto max-w-3xl space-y-8 px-4 py-12 text-muted-foreground md:px-6 md:py-16">
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-foreground">1. Acceptance of terms</h2>
                     <p>

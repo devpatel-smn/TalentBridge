@@ -177,7 +177,7 @@ export function JobDetailPage() {
                     {job.description && (
                         <section>
                             <h2 className="text-xl font-semibold">About the role</h2>
-                            <div className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert">
+                            <div className="prose prose-sm mt-3 max-w-none text-muted-foreground">
                                 <p className="whitespace-pre-wrap">{job.description}</p>
                             </div>
                         </section>

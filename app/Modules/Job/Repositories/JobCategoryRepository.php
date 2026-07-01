@@ -12,10 +12,9 @@ class JobCategoryRepository implements JobCategoryRepositoryInterface
     {
         return JobCategory::query()
             ->active()
-            ->with(['children' => fn ($query) => $query->active()->orderBy('sort_order')])
             ->roots()
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name', 'slug', 'sort_order']);
     }
 }

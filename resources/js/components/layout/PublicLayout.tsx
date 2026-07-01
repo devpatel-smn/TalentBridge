@@ -6,8 +6,11 @@ import { PublicHeader } from '@/components/layout/PublicHeader';
 export function PublicLayout() {
     return (
         <div className="flex min-h-screen min-w-0 flex-col">
+            <a href="#main-content" className="skip-link">
+                Skip to main content
+            </a>
             <PublicHeader />
-            <main className="min-w-0 flex-1 overflow-x-hidden">
+            <main id="main-content" className="min-w-0 flex-1" tabIndex={-1}>
                 <PageTransition>
                     <Outlet />
                 </PageTransition>

@@ -26,7 +26,7 @@ export function AuthPromptDialog({
     title = 'Sign in to continue',
     description = 'Please sign in to continue exploring TalentBridge.',
 }: AuthPromptDialogProps) {
-    const handleNavigate = (path: string) => {
+    const handleNavigate = () => {
         if (returnTo) setReturnUrl(returnTo);
         onOpenChange(false);
     };
@@ -35,7 +35,7 @@ export function AuthPromptDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md gap-0 overflow-hidden rounded-2xl border-border/60 p-0 shadow-elevation-3">
                 <div className="relative overflow-hidden px-6 pb-2 pt-8 text-center">
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary)/0.15)_0%,_transparent_70%)]" />
+                    <div className="pointer-events-none absolute inset-0 bg-primary/8" />
                     <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-elevation-1">
                         <LockKeyhole className="h-6 w-6" aria-hidden="true" />
                     </div>
@@ -50,7 +50,7 @@ export function AuthPromptDialog({
                         <Link
                             to={PUBLIC_PATHS.login}
                             state={returnTo ? { from: returnTo } : undefined}
-                            onClick={() => handleNavigate(PUBLIC_PATHS.login)}
+                            onClick={() => handleNavigate()}
                         >
                             Sign in
                         </Link>
@@ -59,7 +59,7 @@ export function AuthPromptDialog({
                         <Link
                             to={PUBLIC_PATHS.register}
                             state={returnTo ? { from: returnTo } : undefined}
-                            onClick={() => handleNavigate(PUBLIC_PATHS.register)}
+                            onClick={() => handleNavigate()}
                         >
                             Create free account
                         </Link>

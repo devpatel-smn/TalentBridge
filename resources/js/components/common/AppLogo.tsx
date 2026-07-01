@@ -55,7 +55,7 @@ export function AppLogo({ size = 'md', showWordmark = false, variant = 'default'
                     'relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl',
                     variant === 'light'
                         ? 'bg-white/10 ring-1 ring-white/15 shadow-[0_10px_28px_-18px_rgba(255,255,255,0.55)]'
-                        : 'bg-[linear-gradient(145deg,hsl(var(--navy))_0%,hsl(37_13%_19%)_55%,hsl(var(--navy))_100%)] shadow-elevation-1 ring-1 ring-navy/10',
+                        : 'bg-navy shadow-elevation-1 ring-1 ring-navy/10',
                     s.box,
                 )}
             >

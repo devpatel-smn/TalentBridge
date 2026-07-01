@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,14 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { authApi } from '@/features/auth/api/auth-api';
 import { registerSchema, type RegisterFormData } from '@/features/auth/schemas/auth-schemas';
 import { peekReturnUrl } from '@/lib/auth-redirect';
+import { COUNTRIES } from '@/lib/countries';
 import { PUBLIC_PATHS } from '@/lib/paths';
 import { AppLogo } from '@/components/common/AppLogo';
 import { useAuthStore } from '@/stores/auth-store';
 import { getApiErrorMessage } from '@/lib/api-client';
 
 function toRegisterPayload(data: RegisterFormData) {
-    const { city: _city, state: _state, zip: _zip, country: _country, ...payload } = data;
+    const { zip: _zip, ...payload } = data;
+
+    if (!payload.phone?.trim()) {
+        delete payload.phone;
+    }
+
     return payload;
+}
+
+function normalizePhoneInput(value: string): string {
+    return value.replace(/\D/g, '').slice(0, 15);
 }
 
 export function RegisterPage() {
@@ -36,6 +46,7 @@ export function RegisterPage() {
         handleSubmit,
         watch,
         setValue,
+        control,
         formState: { errors },
     } = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
@@ -49,11 +60,10 @@ export function RegisterPage() {
         onSuccess: (user) => {
             setUser(user);
             toast.success('Account created! Please verify your email.');
-            if (returnTo) {
-                navigate('/verify-email', { state: { from: returnTo } });
-            } else {
-                navigate('/verify-email');
-            }
+            navigate('/verify-email', {
+                replace: true,
+                state: returnTo ? { from: returnTo } : undefined,
+            });
         },
         onError: (error) => toast.error(getApiErrorMessage(error, 'Registration failed')),
     });
@@ -115,7 +125,20 @@ export function RegisterPage() {
                 )}
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone number</Label>
-                    <Input id="phone" type="tel" className="h-9" {...register('phone')} />
+                    <Input
+                        id="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        maxLength={15}
+                        className="h-9"
+                        {...register('phone', {
+                            onChange: (event) => {
+                                event.target.value = normalizePhoneInput(event.target.value);
+                            },
+                        })}
+                    />
+                    <p className="text-xs text-muted-foreground">Enter 7–15 digits without spaces or symbols.</p>
                     {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
                 </div>
                 <div className="grid gap-5 lg:grid-cols-2 lg:gap-4">
@@ -138,7 +161,24 @@ export function RegisterPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="country">Country</Label>
-                        <Input id="country" className="h-9" {...register('country')} />
+                        <Controller
+                            control={control}
+                            name="country"
+                            render={({ field }) => (
+                                <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                                    <SelectTrigger id="country" className="h-9">
+                                        <SelectValue placeholder="Select a country" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {COUNTRIES.map((country) => (
+                                            <SelectItem key={country.code} value={country.name}>
+                                                {country.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                         {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
                     </div>
                 </div>

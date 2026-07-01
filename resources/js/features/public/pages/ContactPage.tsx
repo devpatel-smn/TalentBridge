@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/forms/FormField';
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
 import { toast } from 'sonner';
 
 export function ContactPage() {
@@ -14,16 +16,17 @@ export function ContactPage() {
 
     return (
         <>
-            <div className="page-hero">
-                <div className="page-hero-inner">
-                    <h1 className="page-hero-title">Contact us</h1>
-                    <p className="page-hero-description max-w-xl">
-                        Have a question or want to partner with us? We&apos;d love to hear from you.
-                    </p>
-                </div>
-            </div>
+            <PageMeta
+                title="Contact"
+                description="Get in touch with the TalentBridge team for support, partnerships, or general inquiries."
+            />
+            <PageHero
+                eyebrow="Get in touch"
+                title="Contact us"
+                description="Have a question or want to partner with us? We'd love to hear from you."
+            />
 
-            <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16 lg:px-8">
                 <div className="grid gap-12 lg:grid-cols-2">
                     <div className="space-y-8">
                         {[
@@ -32,7 +35,7 @@ export function ContactPage() {
                             { icon: MapPin, label: 'Headquarters', value: 'San Francisco, CA' },
                         ].map((item) => (
                             <div key={item.label} className="flex items-start gap-4">
-                                <div className="icon-box-md bg-primary/10 text-primary dark:bg-gold/12 dark:text-gold">
+                                <div className="icon-box-md bg-primary/10 text-primary">
                                     <item.icon className="h-5 w-5" strokeWidth={1.75} />
                                 </div>
                                 <div>
@@ -45,7 +48,7 @@ export function ContactPage() {
 
                     <form
                         onSubmit={handleSubmit}
-                        className="space-y-5 rounded-xl border border-border/60 bg-card p-8 shadow-elevation-1"
+                        className="space-y-5 rounded-2xl border border-border/60 bg-card p-6 shadow-elevation-1 sm:p-8"
                     >
                         <FormField label="Name" htmlFor="contact-name" required>
                             <Input id="contact-name" required placeholder="Your name" />

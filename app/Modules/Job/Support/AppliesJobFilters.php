@@ -36,6 +36,7 @@ trait AppliesJobFilters
 
             match ($field) {
                 'category_id', 'company_id', 'experience_level' => $query->where($field, $value),
+                'company_slug' => $query->whereHas('company', fn ($builder) => $builder->where('slug', (string) $value)),
                 'employment_type' => $query->where('employment_type', EmploymentType::from((string) $value)),
                 'work_mode' => $query->where('work_mode', WorkMode::from((string) $value)),
                 'status' => $query->where('status', JobStatus::from((string) $value)),

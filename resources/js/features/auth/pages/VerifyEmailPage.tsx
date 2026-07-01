@@ -15,6 +15,7 @@ export function VerifyEmailPage() {
     const { isAuthenticated, role, user } = useAuth();
     const setUser = useAuthStore((s) => s.setUser);
     const status = searchParams.get('status');
+    const isVerified = status === 'verified' || !!user?.email_verified_at;
 
     useEffect(() => {
         if (status === 'verified') {
@@ -47,11 +48,21 @@ export function VerifyEmailPage() {
             <div className="space-y-1.5">
                 <h2 className="text-2xl font-bold tracking-tight">Verify your email</h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                    We sent a verification link to your email. Please check your inbox and click the link to activate
-                    your account.
+                    {user?.email ? (
+                        <>
+                            We sent a verification link to{' '}
+                            <span className="font-medium text-foreground">{user.email}</span>. Please check your inbox
+                            and click the link to activate your account.
+                        </>
+                    ) : (
+                        <>
+                            We sent a verification link to your email. Please check your inbox and click the link to
+                            activate your account.
+                        </>
+                    )}
                 </p>
             </div>
-            {status === 'verified' || user?.email_verified_at ? (
+            {isVerified ? (
                 role ? (
                     <Button asChild>
                         <Link to={DASHBOARD_ROUTES[role]}>Go to dashboard</Link>

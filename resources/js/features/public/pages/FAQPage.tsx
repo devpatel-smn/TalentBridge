@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { PageHero } from '@/components/common/PageHero';
+import { PageMeta } from '@/components/common/PageMeta';
 import { cn } from '@/lib/utils';
 
 const faqs = [
@@ -34,38 +36,55 @@ export function FAQPage() {
 
     return (
         <>
-            <div className="border-b border-border/60 bg-muted/30 pt-header">
-                <div className="mx-auto max-w-3xl px-4 py-16 text-center md:px-6">
-                    <h1 className="text-4xl font-bold tracking-tight">Frequently asked questions</h1>
-                    <p className="mt-4 text-lg text-muted-foreground">Everything you need to know about TalentBridge</p>
-                </div>
-            </div>
+            <PageMeta
+                title="FAQ"
+                description="Answers to common questions about TalentBridge for job seekers and employers."
+            />
+            <PageHero
+                title="Frequently asked questions"
+                description="Everything you need to know about TalentBridge"
+                className="text-center [&_.page-hero-inner]:max-w-3xl [&_.page-hero-inner]:text-center [&_.page-hero-description]:mx-auto"
+            />
 
-            <div className="mx-auto max-w-3xl px-4 py-16 md:px-6">
+            <div className="mx-auto max-w-3xl px-4 py-12 md:px-6 md:py-16">
                 <div className="space-y-3">
-                    {faqs.map((faq, index) => (
-                        <div key={faq.q} className="rounded-xl border border-border/60 bg-card overflow-hidden">
+                    {faqs.map((faq, index) => {
+                        const panelId = `faq-panel-${index}`;
+                        const isOpen = openIndex === index;
+                        return (
+                        <div key={faq.q} className="overflow-hidden rounded-xl border border-border/60 bg-card">
                             <button
                                 type="button"
-                                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold transition-colors hover:bg-muted/50"
-                                aria-expanded={openIndex === index}
+                                id={`faq-trigger-${index}`}
+                                onClick={() => setOpenIndex(isOpen ? null : index)}
+                                className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold transition-colors hover:bg-muted/50 sm:text-base"
+                                aria-expanded={isOpen}
+                                aria-controls={panelId}
                             >
                                 {faq.q}
                                 <ChevronDown
                                     className={cn(
-                                        'h-5 w-5 shrink-0 text-muted-foreground transition-transform',
-                                        openIndex === index && 'rotate-180',
+                                        'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-300 motion-reduce:transition-none',
+                                        isOpen && 'rotate-180',
                                     )}
+                                    aria-hidden="true"
                                 />
                             </button>
-                            {openIndex === index && (
-                                <div className="border-t border-border/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
-                                    {faq.a}
-                                </div>
-                            )}
+                            <div
+                                id={panelId}
+                                role="region"
+                                aria-labelledby={`faq-trigger-${index}`}
+                                hidden={!isOpen}
+                                className={cn(
+                                    'border-t border-border/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground',
+                                    !isOpen && 'hidden',
+                                )}
+                            >
+                                {faq.a}
+                            </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </>

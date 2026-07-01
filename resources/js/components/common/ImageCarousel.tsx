@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type TouchEvent } from 'react';
 import { cn } from '@/lib/utils';
+import { resolveImageFallback, resolveImageSrc } from '@/lib/images';
 
 interface ImageCarouselSlide {
-    src: string;
+    src: string | { webp: string; fallback: string };
     alt: string;
+    className?: string;
 }
 
 interface ImageCarouselProps {
@@ -27,6 +29,7 @@ export function ImageCarousel({
 }: ImageCarouselProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [loadedIndices, setLoadedIndices] = useState<Set<number>>(() => new Set([0]));
     const touchStartX = useRef(0);
 
     const goTo = useCallback(
@@ -61,6 +64,16 @@ export function ImageCarousel({
     };
 
     useEffect(() => {
+        const nextIndex = (activeIndex + 1) % slides.length;
+        setLoadedIndices((prev) => {
+            const next = new Set(prev);
+            next.add(activeIndex);
+            next.add(nextIndex);
+            return next;
+        });
+    }, [activeIndex, slides.length]);
+
+    useEffect(() => {
         if (slides.length <= 1 || isPaused) return;
 
         const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -83,21 +96,32 @@ export function ImageCarousel({
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            <div className="relative overflow-hidden rounded-2xl">
-                <div
-                    className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-                    style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-                >
-                    {slides.map((slide, index) => (
-                        <img
-                            key={slide.src}
-                            src={slide.src}
-                            alt={slide.alt}
-                            className={cn('w-full shrink-0 object-cover', imageClassName)}
-                            loading={index === 0 ? 'eager' : 'lazy'}
-                        />
-                    ))}
-                </div>
+            <div className={cn('relative overflow-hidden', imageClassName)}>
+                {slides.map((slide, index) => {
+                    if (!loadedIndices.has(index)) return null;
+
+                    const isActive = index === activeIndex;
+                    const webpSrc = resolveImageSrc(slide.src);
+                    const fallbackSrc = resolveImageFallback(slide.src);
+
+                    return (
+                        <picture key={typeof slide.src === 'string' ? slide.src : slide.src.webp}>
+                            {fallbackSrc && <source srcSet={webpSrc} type="image/webp" />}
+                            <img
+                                src={fallbackSrc ?? webpSrc}
+                                alt={slide.alt}
+                                className={cn(
+                                    'absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                                    isActive ? 'z-10 opacity-100' : 'z-0 opacity-0',
+                                    slide.className,
+                                )}
+                                loading={index === 0 ? 'eager' : 'lazy'}
+                                decoding="async"
+                                fetchPriority={index === 0 ? 'high' : 'auto'}
+                            />
+                        </picture>
+                    );
+                })}
                 {overlay}
             </div>
 
@@ -112,9 +136,10 @@ export function ImageCarousel({
                 >
                     {slides.map((slide, index) => {
                         const isActive = index === activeIndex;
+                        const key = typeof slide.src === 'string' ? slide.src : slide.src.webp;
                         return (
                             <button
-                                key={slide.src}
+                                key={key}
                                 type="button"
                                 role="tab"
                                 aria-selected={isActive}

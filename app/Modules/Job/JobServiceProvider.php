@@ -4,9 +4,11 @@ namespace App\Modules\Job;
 
 use App\Modules\Job\Repositories\Contracts\JobCategoryRepositoryInterface;
 use App\Modules\Job\Repositories\Contracts\JobRepositoryInterface;
+use App\Modules\Job\Repositories\Contracts\PublicCompanyRepositoryInterface;
 use App\Modules\Job\Repositories\Contracts\SkillRepositoryInterface;
 use App\Modules\Job\Repositories\JobCategoryRepository;
 use App\Modules\Job\Repositories\JobRepository;
+use App\Modules\Job\Repositories\PublicCompanyRepository;
 use App\Modules\Job\Repositories\SkillRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -20,6 +22,7 @@ class JobServiceProvider extends ServiceProvider
         $this->app->bind(JobRepositoryInterface::class, JobRepository::class);
         $this->app->bind(JobCategoryRepositoryInterface::class, JobCategoryRepository::class);
         $this->app->bind(SkillRepositoryInterface::class, SkillRepository::class);
+        $this->app->bind(PublicCompanyRepositoryInterface::class, PublicCompanyRepository::class);
     }
 
     public function boot(): void

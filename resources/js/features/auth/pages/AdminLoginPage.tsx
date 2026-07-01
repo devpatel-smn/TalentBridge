@@ -81,7 +81,7 @@ export function AdminLoginPage() {
                                     id="admin-email"
                                     type="email"
                                     placeholder="admin@talentbridge.com"
-                                    className="rounded-xl pl-10"
+                                    className="input-leading-icon rounded-xl"
                                     autoComplete="username"
                                     aria-invalid={!!errors.email}
                                     {...register('email')}
@@ -96,7 +96,7 @@ export function AdminLoginPage() {
                                 <Input
                                     id="admin-password"
                                     type="password"
-                                    className="rounded-xl pl-10"
+                                    className="input-leading-icon rounded-xl"
                                     autoComplete="current-password"
                                     aria-invalid={!!errors.password}
                                     {...register('password')}
